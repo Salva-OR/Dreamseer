@@ -1,40 +1,485 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dreamseer — Home</title>
-  <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto,  padding: 2rem; line-height:1.5; color:#111 }
-    header { margin-bottom:1.25rem }
-    nav a { color:#0366d6; text-decoration:none }
-    .cards { display:flex; gap:1rem; flex-wrap:wrap }
-    .card { padding:1rem; border:1px solid #e1e4e8; border-radius:8px; min-width:200px; box-shadow:0 1px 2px rgba(0,0,0,0.03) }
-    footer { margin-top:2rem; color:#6a737d; font-size:.9rem }
-  </style>
-</head>
-<body>
-  <header>
-    <h1>Dreamseer</h1>
-    <p>Choose a page to open — replace the links below with your actual HTML filenames/paths if needed.</p>
-  </header>
+    <!--  ================= RENAME BROWSER DISPLAY NAME HERE: ================= -->
+    <title>Player's System</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        :root {
+            --main-bg: #0a0a0a;
+            --panel-bg: #1a1a1a;
+            --accent: #00ff9d;
+            --text: #ffffff;
+            --border: #2a2a2a;
+        }
 
-  <main>
-    <nav class="cards" aria-label="Site pages">
-      <div class="card">
-        <h2><a href="library.html">Page 1</a></h2>
-        <p>Library</p>
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--main-bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            object-fit: cover;
+            box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+        }
+
+        .cyber-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            padding: 20px;
+            margin: 10px;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            padding: 10px;
+            background: #000;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .quest-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+
+        .quest-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #000;
+            border-left: 3px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cyber-button {
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            padding: 8px 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .cyber-button:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .cyber-popup {
+            background: var(--panel-bg);
+            padding: 30px;
+            width: 500px;
+            border: 2px solid var(--accent);
+        }
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--panel-bg);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid var(--accent);
+        }
+
+        .time-display {
+            color: var(--accent);
+        }
+
+        .completion-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .completion-popup {
+            background: var(--panel-bg);
+            border: 3px solid var(--accent);
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0, 255, 157, 0.5);
+        }
+        
+        .page-transition {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+    </head>
+    <body>
+    <div class="profile-header">
+        <img src="pfp.png" class="profile-pic" alt="Profile">
+        <div>
+            <!--  ================= RENAME YOUR PERSONAL TITLE HERE: ================= -->
+            <h1 style="color:var(--accent);margin:0"> THE DREAMSEER ࣪☾.</h1>
+            <h2 id="overall-rank" style="margin:0">LVL: ???</h2>
+        </div>
+    </div>
+
+    <div class="cyber-panel">
+       <!-- WARNING: THESE ARE PLACEHOLDERS! TO CUSTOMIZE, EDIT save.txt! -->
+        <div class="stat-grid">
+            <div class="stat-item">
+                STR: <span id="str-stat">2 (F-)</span>
+            </div>
+            <div class="stat-item">
+                INT: <span id="int-stat">0 (F-)</span>
+            </div>
+            <div class="stat-item">
+                SOC: <span id="soc-stat">0 (F-)</span>
+            </div>
+            <div class="stat-item">
+                SPR: <span id="spr-stat">0 (F-)</span>
+            </div>
+        </div>
+
+      <div class="cyber-panel">
+          <!--  ================= RENAME THE "LIST OF QUESTS" HEADER & BUTTONS HERE: ================= -->
+          <h3>« LIST OF QUESTS »</h3>
+          <div class="quest-list" id="quest-list"></div>
+          <div style="margin-top:15px">
+                <button class="cyber-button" onclick="showPopup('add-quest')">🪽 ADD QUEST</button>
+                <button class="cyber-button" onclick="showPopup('remove-quest')">🔮 REMOVE QUEST</button>
+          </div>
       </div>
+    </div>
 
-      <div class="card">
-        <h2><a href="warfare.html">Page 2</a></h2>
-        <p>Warfare</p>
-      </div>
-    </nav>
-  </main>
+    <div class="popup-overlay" id="popup-overlay">
+        <div class="cyber-popup" id="add-quest">
+            <!--  ================= RENAME THE QUEST POPUP HEADER & BUTTONS HERE: ================= -->
+            <h2>«NEW QUEST RECEIVED!𐀔»</h2>
+            <textarea id="quest-title" placeholder=".𖥔 ݁ ˖The quest, from the depths of dreamland, entails that you must..." style="width:100%;height:80px;margin:10px 0"></textarea>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    STR: <input type="number" id="str-reward" style="width:60px">
+                </div>
+                <div class="stat-item">
+                    INT: <input type="number" id="int-reward" style="width:60px">
+                </div>
+                <div class="stat-item">
+                    SOC: <input type="number" id="soc-reward" style="width:60px">
+                </div>
+                <div class="stat-item">
+                    SPR: <input type="number" id="spr-reward" style="width:60px">
+                </div>
+            </div>
+            <div style="margin-top:20px">
+                <button class="cyber-button" onclick="addQuest()">CONFIRM</button>
+                <button class="cyber-button" onclick="closePopup()">CANCEL</button>
+            </div>
+        </div>
 
-  <footer>
-    <p>Hosted from the repository root. If you want this served by GitHub Pages, tell me whether to publish from the root (main) branch, the /docs folder, or a gh-pages branch and I will push and configure accordingly.</p>
-  </footer>
+        <div class="cyber-popup" id="remove-quest">
+            <!--  ================= RENAME THE QUEST DELETE HEADER & BUTTONS HERE: ================= -->
+            <h2>«ABOLISH MISSION!𐀔»</h2>
+            <div id="remove-quest-list" style="max-height:200px;overflow-y:auto"></div>
+            <div style="margin-top:15px">
+                <button class="cyber-button" onclick="removeQuests()">CONFIRM</button>
+                <button class="cyber-button" onclick="closePopup()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div style="display:flex;gap:10px">
+            <button class="cyber-button" onclick="navigateTo('warfare.html')">𓆩☬𓆪 WARFARE</button>
+            <button class="cyber-button" onclick="navigateTo('library.html')">𓆩🕮𓆪 LIBRARY</button>
+            <button class="cyber-button" onclick="navigateTo('kingdom.html')">𓆩⚚𓆪 KINGDOM</button>
+            <button class="cyber-button" onclick="saveToFile()">༄ SAVE DATA </button>
+            <button class="cyber-button" onclick="loadFromFile()">☁ LOAD DATA </button>
+        </div>
+        <div id="datetime" class="time-display"></div>
+    </div>
+
+    <div class="completion-overlay" id="completion-overlay">
+        <div class="completion-popup" id="completion-popup"></div>
+    </div>
+
+    <script>
+        const RANKS = ['F-','F','F+','E-','E','E+','D-','D','D+','C-','C','C+',
+                     'B-','B','B+','A-','A','A+','S-','S','S+','SS-','SS','SS+',
+                     'SSS-','SSS','SSS+'];
+
+        // ================= 50 STAT POINTS PER LEVEL UP TOO MUCH? CUSTOMIZE TO YOU LIKING! value / 50 = for every 50 stat points, so value / 20 = rank up for every 20 stat points! :3 =================
+        function calculateRank(value) {
+            return RANKS[Math.min(Math.floor(value / 50), RANKS.length - 1)];
+        }
+
+        // ================= CONSTANTS FOR AN UNLOADED GAMESTATE! =================
+        let gameState = JSON.parse(localStorage.getItem('gameState')) || {
+            stats: { str: 2, int: 0, soc: 0, spr: 0 },
+            quests: [],
+            allies: [{ species: "Mirrorfox", personality: "Reserved", name: "" }],
+            coins: 0,
+            candies: 0,
+            companionAffinity: 0
+        };
+
+        function saveToFile() {
+            const data = JSON.stringify(gameState, null, 2);
+            const blob = new Blob([data], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'save.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadFromFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.txt';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const loadedData = JSON.parse(reader.result);
+                        gameState = loadedData;
+                        localStorage.setItem('gameState', JSON.stringify(gameState));
+                        updateInterface();
+                        alert("Game loaded successfully!");
+                    } catch (error) {
+                        alert("Invalid save file format!");
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function addQuest() {
+            const newQuest = {
+                description: document.getElementById('quest-title').value,
+                rewards: {
+                    str: parseInt(document.getElementById('str-reward').value) || 0,
+                    int: parseInt(document.getElementById('int-reward').value) || 0,
+                    soc: parseInt(document.getElementById('soc-reward').value) || 0,
+                    spr: parseInt(document.getElementById('spr-reward').value) || 0
+                }
+            };
+
+            if (!newQuest.description) return;
+
+            gameState.quests.push(newQuest);
+            updateInterface();
+            closePopup();
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        function removeQuests() {
+            const checkboxes = document.querySelectorAll('#remove-quest-list input:checked');
+            const indices = Array.from(checkboxes).map(cb => parseInt(cb.value));
+            
+            indices.sort((a, b) => b - a).forEach(i => {
+                gameState.quests.splice(i, 1);
+            });
+
+            updateInterface();
+            closePopup();
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+        }
+
+        function completeQuest(index) {
+            const quest = gameState.quests[index];
+            let newAlly = null;
+            
+            // ================= CONSTANTS FOR AN UNLOADED GAMESTATE! =================
+            if(Math.random() > 0.95) {
+                newAlly = {
+                    species: "Mirrorfox",
+                    personality: "Reserved",
+                    status: "",
+                    name: ""
+                };
+                gameState.allies.push(newAlly);
+            }
+    
+            const overlay = document.getElementById('completion-overlay');
+            const popup = document.getElementById('completion-popup');
+            
+            popup.innerHTML = `
+                <h2 style="color:var(--accent);margin:0 0 20px 0">«QUEST COMPLETED!𐀔»</h2>
+                <div style="font-size:1.2em">${quest.description}</div>
+                <div style="margin-top:25px;font-size:1.5em">
+                    ${Object.entries(quest.rewards).map(([stat, value]) =>
+                        `✨ +${value} ${stat.toUpperCase()}`
+                    ).join('<br>')}
+                </div>
+                ${newAlly ? `
+                <div style="margin-top:20px;border-top:2px solid var(--accent);padding-top:15px">
+                    🐾 MET NEW ALLY:<br>
+                    <span style="color:var(--accent);">
+                        ${newAlly.species} (${newAlly.personality})
+                    </span>
+                </div>
+                ` : ''}
+            `;
+
+            overlay.style.display = 'flex';
+
+            Object.entries(quest.rewards).forEach(([stat, value]) => {
+                gameState.stats[stat] += value;
+            });
+
+            gameState.quests.splice(index, 1);
+            
+            setTimeout(() => {
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    overlay.style.opacity = '1';
+                    updateInterface();
+                    localStorage.setItem('gameState', JSON.stringify(gameState));
+                }, 500);
+            }, 3000);
+        }
+
+        function updateInterface() {
+            document.getElementById('str-stat').textContent = `${gameState.stats.str} (${calculateRank(gameState.stats.str)})`;
+            document.getElementById('int-stat').textContent = `${gameState.stats.int} (${calculateRank(gameState.stats.int)})`;
+            document.getElementById('soc-stat').textContent = `${gameState.stats.soc} (${calculateRank(gameState.stats.soc)})`;
+            document.getElementById('spr-stat').textContent = `${gameState.stats.spr} (${calculateRank(gameState.stats.spr)})`;
+            
+            const totalStats = (gameState.stats.str + gameState.stats.int +
+                              gameState.stats.soc + gameState.stats.spr) / 4;
+            document.getElementById('overall-rank').textContent = `RANK: ${calculateRank(totalStats)}`;
+
+            const questList = document.getElementById('quest-list');
+            questList.innerHTML = '';
+            
+            gameState.quests.forEach((quest, index) => {
+                const questItem = document.createElement('div');
+                questItem.className = 'quest-item';
+                questItem.innerHTML = `
+                    <div>
+                        ${quest.description}<br>
+                        <small style="color:var(--accent)">
+                            [${Object.entries(quest.rewards).map(([stat, value]) =>
+                                value > 0 ? `${stat.toUpperCase()}+${value}` : '').filter(Boolean).join(' ')}]
+                        </small>
+                    </div>
+                    <button class="cyber-button" onclick="completeQuest(${index})">COMPLETE</button>
+                `;
+                questList.appendChild(questItem);
+            });
+            
+            // ================= RENAME EMPTY QUEST LIST MESSAGE HERE! =================
+            if (gameState.quests.length === 0) {
+                questList.innerHTML = '<div class="quest-item"> ₊˚⊹ ⟢ No quests have been assigned to you from the land of dreams. Please draw your cards to resume the rewriting of your fate. 🃁</div>';
+            }
+        }
+
+        function showPopup(id) {
+            document.getElementById('popup-overlay').style.display = 'flex';
+            document.querySelectorAll('.cyber-popup').forEach(p => p.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            
+            if (id === 'remove-quest') {
+                const container = document.getElementById('remove-quest-list');
+                container.innerHTML = '';
+                
+                gameState.quests.forEach((quest, index) => {
+                    const questDiv = document.createElement('div');
+                    questDiv.style.margin = '5px 0';
+                    questDiv.innerHTML = `
+                        <input type="checkbox" id="q${index}" value="${index}">
+                        <label for="q${index}">${quest.description}</label>
+                    `;
+                    container.appendChild(questDiv);
+                });
+            }
+        }
+
+        function closePopup() {
+            document.getElementById('popup-overlay').style.display = 'none';
+            document.getElementById('quest-title').value = '';
+            document.getElementById('str-reward').value = '';
+            document.getElementById('int-reward').value = '';
+            document.getElementById('soc-reward').value = '';
+            document.getElementById('spr-reward').value = '';
+        }
+
+        function updateTime() {
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('datetime').textContent = new Date().toLocaleDateString('en-US', options);
+        }
+
+        function navigateTo(url) {
+            document.body.style.animation = 'fadeOut 0.5s ease-out';
+            setTimeout(() => {
+                window.location.href = url;
+            }, 450);
+        }
+
+        // Initialize the interface
+        updateTime();
+        updateInterface();
+        setInterval(updateTime, 1000);
+        document.body.classList.add('page-transition');
+    </script>
 </body>
 </html>
