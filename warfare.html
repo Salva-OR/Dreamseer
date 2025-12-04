@@ -673,6 +673,10 @@
                 <div class="stat-label">QUESTIONS</div>
                 <div id="questions-count" class="stat-value">0/0</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-label">GRADE</div>
+                <div id="grade-percentage" class="stat-value">0%</div>
+            </div>
         </div>
     </div>
     
@@ -1051,6 +1055,17 @@
             }
         }
 
+        function updateGradePercentage() {
+            const gradeElement = document.getElementById('grade-percentage');
+            let percentage = 0;
+    
+            if (gameState.questionsAnswered > 0) {
+                percentage = Math.round((gameState.questionsCorrect / gameState.questionsAnswered) * 100);
+            }
+    
+            gradeElement.textContent = `${percentage}%`;
+        }
+        
         function updateUI() {
             playerHpText.textContent = gameState.playerHP;
             const playerHpPercent = (gameState.playerHP / gameState.playerMaxHP) * 100;
@@ -1061,6 +1076,8 @@
 
             slainCount.textContent = gameState.slainCount;
             questionsCount.textContent = `${gameState.questionsCorrect}/${gameState.questionsAnswered}`;
+
+            updateGradePercentage();
 
             reviveBtn.disabled = gameState.playerHP > 0;
             castBtn.disabled = gameState.magicBar >= gameState.maxMagicBar || gameState.playerHP <= 0;
@@ -1498,6 +1515,7 @@
                     showNotification("Please select an answer!", false);
                     return;
                 }
+                updateGradePercentage();
             }
 
             gameState.questionsAnswered++;
@@ -1601,7 +1619,7 @@
                 effect.remove();
             }, 1000);
         }
-
+        
         function endWar() {
             reportSlain.textContent = gameState.slainCount;
             reportQuestions.textContent = `${gameState.questionsCorrect}/${gameState.questionsAnswered}`;
