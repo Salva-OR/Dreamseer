@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--  ================= RENAME BROWSER DISPLAY NAME HERE: ================= -->
+    <title>Warfare System</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        :root {
+            --main-bg: #0a0a0a;
+            --panel-bg: #1a1a1a;
+            --accent: #00ff9d;
+            --text: #ffffff;
+            --border: #2a2a2a;
+            --dim-text: #aaaaaa;
+            --hover-bg: rgba(0, 255, 157, 0.1);
+            --player-color: #00b4ff;
+            --enemy-color: #ff5555;
+            --magic-full: #00ff9d;
+            --magic-empty: #2a2a2a;
+            --success: rgba(0, 255, 157, 0.3);
+            --error: rgba(255, 85, 85, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--main-bg);
+            color: var(--text);
+            padding: 20px;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(0, 255, 157, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 157, 0.05) 0%, transparent 20%);
+            overflow-x: hidden;
+        }
+
+        .warfare-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
+
+        .warfare-title {
+            color: var(--accent);
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+            letter-spacing: 1px;
+        }
+
+        .stats-display {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--dim-text);
+            font-size: 0.8rem;
+        }
+
+        .stat-value {
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .battle-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .combatant-panel {
+            flex: 1;
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            padding: 15px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-panel {
+            border-color: var(--player-color);
+        }
+
+        .enemy-panel {
+            border-color: var(--enemy-color);
+        }
+
+        .combatant-name {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+
+        .player-name {
+            color: var(--player-color);
+        }
+
+        .enemy-name {
+            color: var(--enemy-color);
+        }
+
+        .hp-display {
+            font-size: 0.9rem;
+            margin: 6px 0;
+        }
+
+        .hp-bar {
+            width: 100%;
+            height: 18px;
+            background: #000;
+            border: 1px solid var(--border);
+            margin: 6px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hp-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .player-hp {
+            background: var(--player-color);
+        }
+
+        .enemy-hp {
+            background: var(--enemy-color);
+        }
+
+        .magic-bar-container {
+            margin: 12px 0;
+        }
+
+        .magic-bar {
+            display: flex;
+            justify-content: center;
+            gap: 3px;
+            margin-top: 6px;
+        }
+
+        .magic-segment {
+            width: 14px;
+            height: 20px;
+            border: 1px solid var(--border);
+            background: var(--magic-empty);
+        }
+
+        .magic-segment.active {
+            background: var(--magic-full);
+            box-shadow: 0 0 6px var(--magic-full);
+        }
+
+        .combatant-image {
+            font-size: 3.5rem;
+            margin: 12px 0;
+            text-shadow: 0 0 12px currentColor;
+            transition: all 0.3s;
+        }
+
+        .player-image {
+            color: var(--player-color);
+        }
+
+        .enemy-image {
+            color: var(--enemy-color);
+        }
+
+        .battle-log {
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            padding: 12px;
+            min-height: 80px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+        }
+
+        .log-entry {
+            margin-bottom: 6px;
+            padding: 5px;
+            border-left: 3px solid var(--accent);
+            background: rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .player-log {
+            border-color: var(--player-color);
+        }
+
+        .enemy-log {
+            border-color: var(--enemy-color);
+        }
+
+        .critical-log {
+            border-color: #ffcc00;
+            background: rgba(255, 204, 0, 0.1);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .cyber-button {
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: normal;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-button:hover:not(:disabled) {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        .cyber-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .cyber-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 157, 0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .cyber-button:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .attack-btn {
+            border-color: var(--player-color);
+        }
+
+        .cast-btn {
+            border-color: var(--accent);
+        }
+
+        .revive-btn {
+            border-color: #ffcc00;
+        }
+
+        .end-btn {
+            border-color: #ff5555;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .cyber-popup {
+            background: var(--panel-bg);
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 25px rgba(0, 255, 157, 0.2);
+            position: relative;
+        }
+
+        .popup-header {
+            color: var(--accent);
+            margin-bottom: 12px;
+            text-align: center;
+            font-size: 1.4rem;
+        }
+
+        .popup-content {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 12px 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin: 6px 0;
+        }
+
+        .wrong-answers {
+            margin-top: 12px;
+        }
+
+        .wrong-item {
+            padding: 6px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+
+        .popup-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-popup:hover {
+            color: var(--accent);
+        }
+
+        .question-popup {
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1rem;
+            margin: 12px 0;
+            min-height: 60px;
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 8px;
+            margin: 12px 0;
+            background: #000;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .war-subtitle {
+            color: var(--dim-text);
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--panel-bg);
+            padding: 19px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 2px solid var(--accent);
+            z-index: 1000;
+        }
+        
+        .text-input-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .correct-answer-popup {
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #correct-answer-popup {
+            z-index: 1001;
+        }
+
+        .auto-close-notice {
+            color: var(--dim-text);
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+
+        .multiple-choice-container {
+            margin: 15px 0;
+        }
+
+        .choice-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .choice-btn {
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .choice-btn:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .choice-btn.selected {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 10px var(--accent);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .time-display {
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        .action-buttons {
+            margin-bottom: 90px;
+        }
+
+        .page-transition {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        .log-michael {
+            color: #80d4ff;
+            font-style: italic;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes damage {
+            0% { opacity: 0; transform: translateY(-20px); }
+            50% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+
+        @keyframes pulse-blue {
+            0% { box-shadow: 0 0 5px var(--player-color); }
+            50% { box-shadow: 0 0 20px var(--player-color); }
+            100% { box-shadow: 0 0 5px var(--player-color); }
+        }
+        
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 5px var(--enemy-color); }
+            50% { box-shadow: 0 0 20px var(--enemy-color); }
+            100% { box-shadow: 0 0 5px var(--enemy-color); }
+        }
+        
+        @keyframes crit-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 5px #ff0000; }
+            50% { transform: scale(1.1); box-shadow: 0 0 30px #ff0000; }
+            100% { transform: scale(1); box-shadow: 0 0 5px #ff0000; }
+        }
+        
+        @keyframes miss-shrink {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); box-shadow: 0 0 20px var(--player-color); }
+            100% { transform: scale(1); }
+        }
+        
+        .fade-out {
+            animation: fadeOut 3s forwards;
+        }
+        
+        .player-attacked {
+            animation: pulse-blue 0.5s ease;
+        }
+        
+        .enemy-attacked {
+            animation: pulse-red 0.5s ease;
+        }
+        
+        
+        .crit-attack {
+            animation: crit-pulse 0.5s ease;
+        }
+        
+        .miss-attack {
+            animation: miss-shrink 0.5s ease;
+        }
+        
+        .combatant-panel {
+            transition: all 0.3s ease;
+        }
+        
+        .shake {
+            animation: shake 0.5s ease;
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease;
+        }
+
+        .damage-effect {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: damage 1s ease forwards;
+            pointer-events: none;
+        }
+
+        .player-damage {
+            color: var(--player-color);
+            top: 50%;
+            left: 80%;
+        }
+
+        .enemy-damage {
+            color: var(--enemy-color);
+            top: 50%;
+            right: 80%;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--panel-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        @media (max-width: 900px) {
+            .battle-container {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .warfare-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .stats-display {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .bottom-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+    </style>
+    </head>
+    <body>
+    <div id="damage-container"></div>
+    
+    <!--  ================= RENAME WARFARE DISPLAY HERE: ================= -->
+    <div class="warfare-header">
+        <h1 class="warfare-title">WARFARE OPERATIONS</h1>
+        <div class="war-subtitle">⚠︎ Warning! Beast legion is active!</div>
+        <div class="stats-display">
+            <div class="stat-item">
+                <div class="stat-label">ENEMIES SLAIN</div>
+                <div id="slain-count" class="stat-value">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">QUESTIONS</div>
+                <div id="questions-count" class="stat-value">0/0</div>
+            </div>
+        </div>
+    </div>
+    
+    <!--  ================= RENAME PLAYER DETAILS HERE: ================= -->
+    <div class="battle-container">
+        <div class="combatant-panel player-panel" id="player-panel">
+            <div>
+                <div class="combatant-name player-name" id="player-name">Sage</div>
+                <!--  ================= IF YOU PLAN TO CHANGE THE HP, CHANGE HERE TOO: ================= -->
+                <div class="hp-display">HP: <span id="player-hp-text">1397</span>/1397</div>
+                <div class="hp-bar">
+                    <div id="player-hp-bar" class="hp-fill player-hp" style="width: 100%"></div>
+                </div>
+                
+                <div class="magic-bar-container">
+                    <div>MAGIC CAST BAR</div>
+                    <div class="magic-bar" id="magic-bar">
+                        <div class="magic-segment"></div>
+                        <div class="magic-segment"></div>
+                        <div class="magic-segment"></div>
+                        <div class="magic-segment"></div>
+                        <div class="magic-segment"></div>
+                    </div>
+                </div>
+            </div>
+            <!--  ================= THIS CAN BE ANYTHING/ANY EMOJI OR WHATEVER ================= -->
+            <div class="combatant-image player-image">✶</div>
+        </div>
+        <!--  ================= RENAME ENEMY DETAILS HERE: ================= -->
+        <div class="combatant-panel enemy-panel" id="enemy-panel">
+            <div>
+                <div class="combatant-name enemy-name" id="enemy-name">???</div>
+                <div class="hp-display">HP: <span id="enemy-hp-text">2500</span>/<span id="enemy-max-hp">2500</span></div>
+                <div class="hp-bar">
+                    <div id="enemy-hp-bar" class="hp-fill enemy-hp" style="width: 100%"></div>
+                </div>
+                <div>❝ Prove your skills to me. ❞</div>
+            </div>
+            <!--  ================= THIS CAN BE ANYTHING/ANY EMOJI OR WHATEVER ================= -->
+            <div class="combatant-image enemy-image">❦︎</div>
+        </div>
+    </div>
+    
+    <!--  ================= ENTRY MESSAGE, CAN BE ANYTHING ================= -->
+    <div class="battle-log" id="battle-log">
+        <div class="log-entry">Battle started! Prepare for combat...</div>
+    </div>
+    
+    <!--  ================= RENAME BATTLE BUTTON DETAILS HERE: ================= -->
+    <div class="action-buttons">
+        <button class="cyber-button attack-btn" id="attack-btn">༒ ATTACK</button>
+        <button class="cyber-button cast-btn" id="cast-btn">ཐི༏ཋྀ󠀮 CAST</button>
+        <button class="cyber-button revive-btn" id="revive-btn" disabled>✵ REVIVE</button>
+        <button class="cyber-button end-btn" id="end-btn">⌖️ END WAR</button>
+    </div>
+    
+    <!--  ================= RENAME BATTLE BUTTON DETAILS HERE: ================= -->
+    <div class="bottom-bar">
+        <div class="nav-buttons">
+            <button class="cyber-button" onclick="navigateTo('library.html')">🕮 LIBRARY</button>
+            <button class="cyber-button" onclick="toggleQuestionMode()" id="question-mode-btn">✧ MULTIPLE CHOICE: OFF</button>
+            <button class="cyber-button">TIP: PRIORITIZE A TOPIC!</button>
+        </div>
+        <div id="datetime" class="time-display"></div>
+    </div>
+    
+    <!--  ================= RENAME QUESTION OPTIMIZATIONS HERE: ================= -->
+    <div class="popup-overlay" id="question-popup">
+        <div class="cyber-popup question-popup">
+            <button class="close-popup">&times;</button>
+            <h2 class="popup-header">ANSWER TO CAST</h2>
+            <div type="text" class="question-text" id="current-question">Loading question...</div>
+            <input type="text" class="answer-input" id="answer-input" placeholder="Enter your answer">
+            <div class="multiple-choice-container" id="multiple-choice-container">
+            <div class="choice-buttons" id="choice-buttons">
+        </div>
+    </div>
+    
+    <!--  ================= RENAME BATTLE BUTTON DETAILS HERE: ================= -->
+    <div class="popup-actions">
+            <button class="cyber-button" id="submit-answer">SUBMIT</button>
+        </div>
+        
+    <!--  ================= DO NOT REMOVE BELOW </div>!!! THIS IS USED FOR THE BUTTONS TO WORK ================= -->
+    </div>
+    </div>
+    
+    <!--  ================= RENAME CORRECT DETAILS HERE: ================= -->
+    <div class="popup-overlay" id="correct-answer-popup">
+        <div class="cyber-popup question-popup">
+            <h2 class="popup-header">CORRECT ANSWER</h2>
+            <div class="question-text" id="correct-answer-text">Loading correct answer...</div>
+            <div class="popup-actions">
+                <button class="cyber-button" id="close-correct-answer">UNDERSTOOD</button>
+            </div>
+        </div>
+    </div>
+    
+    <!--  ================= RENAME BATTLE REPORT DETAILS HERE: ================= -->
+    <div class="popup-overlay" id="endwar-popup">
+        <div class="cyber-popup">
+            <button class="close-popup">&times;</button>
+            <h2 class="popup-header">BATTLE REPORT</h2>
+            <div class="popup-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div>ENEMIES SLAIN</div>
+                        <div id="report-slain" class="stat-number">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>QUESTIONS ANSWERED</div>
+                        <div id="report-questions" class="stat-number">0/0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>DAMAGE DEALT</div>
+                        <div id="report-damage" class="stat-number">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>MAGIC CASTS</div>
+                        <div id="report-casts" class="stat-number">0</div>
+                    </div>
+                </div>
+                <div class="wrong-answers" id="wrong-answers-container">
+                    <h3>QUESTIONS TO REVIEW:</h3>
+                </div>
+            </div>
+            <div class="popup-actions">
+                <button class="cyber-button" id="download-report">📥 DOWNLOAD REPORT</button>
+                <button class="cyber-button" id="new-battle">🔄 NEW BATTLE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONSTANTS =================
+        // ================= YOU CAN CUSTOMIZE YOUR OWN ENEMIES TOO! =================
+        const creaturelist = [
+            "Mosscat", "Glowtoad", "Willowisp", "Dusthare", "Pinesnail", "Bramblefox",
+            "Emberdrake", "Crystalfin", "Shadeowl", "Starstag", "Lanternmoth", "Runeslug",
+            "Dreamdeer", "Mirrorfox", "Thistlemane", "Fluffbat", "Gloomrat", "Skyheron",
+            "Whisperfish", "Sunbear", "Mireling", "Mistwolf", "Flickermouse", "Candlebeetle",
+            "Ashbadger", "Groveantler", "Glimmerhound", "Frostnewt", "Moonmouse", "Echojay",
+            "Veilstag", "Rootserpent", "Nimbushog", "Flamevole", "Glowhopper", "Cobblecrab",
+            "Dustlark", "Twilight Raven", "Rubblebark", "Cloudleech", "Orchidnymph", "Fernweasel",
+            "Mirejay", "Woollytoad", "Sunmoth", "Copperrat", "Dewotter", "Tanglekit", "Sparkslug",
+            "Shadeling", "Nightroost", "Hollowstag", "Siltlizard", "Quillbeast", "Honeybark",
+            "Rainhare", "Clifftern", "Feyrat", "Loamwolf", "Stoneblink", "Emberfox", "Lilacram",
+            "Gold Finx", "Wispweasel", "Duskadder", "Grotkoi", "Bellmouse", "Mothcat", "Witherjay",
+            "Groveowl", "Thundertuft", "Fuzzcrab", "Riverlamp", "Meadowram", "Scorchweasel",
+            "Cloudpup", "Thorncricket", "Lanternjay", "Bristletoad", "Seastag", "Cindersnake",
+            "Puffermoth", "Glintcat", "Splashhound", "Mossraven", "Nettleboar", "Pebblemouse",
+            "Windlemole", "Arcaneelk", "Candlecarp", "Skyviper", "Muddleroot", "Gloamcat",
+            "Shiverotter", "Petalbat", "Briarjack", "Spicebeetle", "Stormhare", "Bubblenewt",
+            "Ghostjay", "Frostflit", "Shadow Finch", "Gladecap", "Thistlehog", "Duskwren",
+            "Vine Lynx", "Moon Drake", "Berrybat", "Murk Turtle", "Gustling", "Thornpaw",
+            "Silver Whelk", "Candle Rat", "Flickerfin", "Wildjay", "Glow Fox", "Frost Gator",
+            "Night Cap", "Spindle Frog", "Marblecat", "Bramble Gull", "Mire Piglet", "Crisp Moth",
+            "Tundra Cat", "Ember Lynx", "Velvet Gull", "Fuzz Viper", "Duskmite", "Loom Ferret",
+            "Stilt Hopper", "Snowslug", "Grove Drake", "Whistle Fawn", "Thistle Rat", "Flint Frog",
+            "Hollow Raven", "Glimmer Jay", "Violet Weasel", "Tarn Owl", "Whisper Stag", "Lichen Elk",
+            "Storm Cub", "Bluff Hare", "Dew Viper", "Cloud Koi", "Burrow Bat", "Dust Jay",
+            "Gravel Hen", "Echo Dog", "Moss Gator", "Night Lamp", "Bark Spider", "Cricket Boar",
+            "Snow Finch", "Pebble Lynx", "Lilypad Toad", "Gloam Rabbit", "Spark Dog", "Willow Gull",
+            "Rune Mite", "Meadow Drake", "Sun Cap", "Moon Slink", "Nettle Fawn", "Glowbell Snail",
+            "Murk Duck", "Silver Drake", "Cloud Bear", "Pollen Beetle", "Flicker Owl", "Grub Hog",
+            "Tangle Hare", "Driftling", "Shellcat", "Veil Ram", "Spindle Jay", "Owl Wisp",
+            "Crag Rabbit", "Ash Vole", "Bubble Finch", "Star Spider", "Fog Whelp", "Pine Piglet",
+            "Bristle Cub", "Mellow Beetle", "Ashling", "Soot Hen", "Lantern Drake", "Puddle Otter",
+            "Frost Cub", "Chime Frog", "Blossom Tern", "Woolly Jay", "Marrow Weasel", "Nectar Wasp",
+            "Tide Dog", "Plume Drake", "Cave Finch", "Flint Owl", "Grove Cub", "Sugar Cap",
+            "Cinder Fawn", "Dusklight Hare", "Wispcat", "Murk Mite", "Lantern Otter", "Bloom Drake",
+            "Root Owl", "Stormy Mole", "Firecap Spider", "Tarn Fox", "River Cub", "Cloud Finch",
+            "Wyrmlet", "Velvet Mole", "Ash Cap", "Shiver Bat", "Violet Moth", "Thorn Hound",
+            "Drizzle Cub", "Fog Fox", "Lush Vole", "Echo Owl", "Berry Mouse", "Loom Wren", "Star Pup",
+            "Meadow Owl", "Glowtooth", "Hearth Cat", "Bark Wolf", "Runestone Mole", "Rain Pika",
+            "Candle Crawler", "Dusty Drake", "Glim Cap", "Shimmer Hog", "Shadow Cub", "Fey Finch",
+            "Ash Beetle", "Dew Snake", "Bark Drake", "Silk Spider", "Flicker Whelp", "Fluff Moth",
+            "Gust Cub", "Crisp Fox", "Mire Newt", "Whim Jay", "Quill Vole", "Nettle Gull",
+            "Glide Mite", "Pebble Pup", "Brim Fox", "Fog Hare", "Crag Beetle", "Thorny Toad",
+            "Whistle Mole", "Lantern Cub", "Tide Rabbit", "Starlit Tern"
+        ];
+
+        const positiveComments = [
+            "Impressive execution.",
+            "That aligns perfectly with the model.",
+            "Your precision is noteworthy.",
+            "Well calculated.",
+            "You anticipated that flawlessly.",
+            "Excellent optimization.",
+            "Your strategy is efficient.",
+            "Nicely done—minimal waste.",
+            "You’ve proven your competence.",
+            "That was a clean operation.",
+            "Your output meets premium standards.",
+            "Flawless execution.",
+            "You read the data well.",
+            "That’s high-caliber work.",
+            "You’re performing above expectations.",
+            "That response was optimal.",
+            "You handled that with surgical precision.",
+            "Your accuracy is commendable.",
+            "You’re mastering these parameters.",
+            "That answer just boosted your ROI."
+        ];
+
+
+        const enemyTaunts = {
+            wrong: [
+                "That was your strategy?",
+                "Even interns outperform you.",
+                "Failure—predictable, yet still disappointing.",
+                "You didn't think. You reacted.",
+                "You're wasting both our time.",
+                "That input lacked calibration.",
+                "Rerun your process. Quietly.",
+                "Your margin of error is... consistent.",
+                "A child could outperform that attempt.",
+                "Weak execution. Zero innovation.",
+                "You’re here for what—moral support?",
+                "If that was calculated, fire your analyst.",
+                "Try again. This time with thought.",
+                "You're not competing. You're flailing.",
+                "Every misstep reveals more of you.",
+                "I almost feel secondhand shame.",
+                "You came unarmed to a data war.",
+                "That's not failure. That’s surrender.",
+                "Flawed logic. Poor control. Impressive mediocrity.",
+                "You're not losing. You're underqualified."
+            ],
+
+            revive: [
+                "Still pretending you're salvageable?",
+                "You weren't worth the effort the first time.",
+                "Come back all you want. You'll still collapse.",
+                "There’s no equity in resurrection.",
+                "Your re-entry lacks purpose. As usual.",
+                "Is this desperation? Or just poor judgment?",
+                "Redundancy doesn't suit you.",
+                "Hope is inefficient. Try something else.",
+                "Still clinging to systems that don’t scale?",
+                "A failed product returning to market—how poetic.",
+                "I’ve seen corpses with more resolve.",
+                "You should’ve stayed obsolete.",
+                "Your uptime is irrelevant.",
+                "Still running on fumes and delusion?",
+                "You survived. Barely. Congratulations?",
+                "Persistence without precision is just noise.",
+                "You're back. Pity.",
+                "Try failing with style next time.",
+                "Still operational? Disappointing.",
+                "No reboot fixes incompetence."
+            ]
+        };
+        
+        // ================= VARIABLES FOR GAME-EXPERIENCE =================
+        // ================= CHANGE THE PLAYER HP & MAXHP ONLY IF NEEDED, OTHERS ARE VARIABLES! =================
+        let gameState = {
+            playerHP: 1397,
+            playerMaxHP: 1397,
+            enemyHP: 0,
+            enemyMaxHP: 0,
+            enemyName: "",
+            slainCount: 0,
+            magicBar: 0,
+            maxMagicBar: 5,
+            questionsAnswered: 0,
+            questionsCorrect: 0,
+            totalDamage: 0,
+            magicCasts: 0,
+            wrongAnswers: [],
+            isActionInProgress: false,
+            correctStreak: 0
+        };
+        
+        let currentQuestionContext = null;
+        let commentCycle = JSON.parse(localStorage.getItem("commentCycle")) || shuffleArrayComment([...positiveComments]);
+        let wrongTauntCycle = JSON.parse(localStorage.getItem("wrongTauntCycle")) || shuffleArrayComment([...enemyTaunts.wrong]);
+        let reviveTauntCycle = JSON.parse(localStorage.getItem("reviveTauntCycle")) || shuffleArrayComment([...enemyTaunts.revive]);
+        let questionMode = 'text'; 
+        let currentChoices = [];
+        let selectedChoice = null;
+
+        const playerHpText = document.getElementById('player-hp-text');
+        const playerHpBar = document.getElementById('player-hp-bar');
+        const enemyHpText = document.getElementById('enemy-hp-text');
+        const enemyMaxHp = document.getElementById('enemy-max-hp');
+        const enemyHpBar = document.getElementById('enemy-hp-bar');
+        const enemyName = document.getElementById('enemy-name');
+        const magicBar = document.getElementById('magic-bar');
+        const slainCount = document.getElementById('slain-count');
+        const questionsCount = document.getElementById('questions-count');
+        const battleLog = document.getElementById('battle-log');
+        const attackBtn = document.getElementById('attack-btn');
+        const castBtn = document.getElementById('cast-btn');
+        const reviveBtn = document.getElementById('revive-btn');
+        const endBtn = document.getElementById('end-btn');
+        const questionPopup = document.getElementById('question-popup');
+        const currentQuestionEl = document.getElementById('current-question');
+        const answerInput = document.getElementById('answer-input');
+        const submitAnswer = document.getElementById('submit-answer');
+        const endwarPopup = document.getElementById('endwar-popup');
+        const reportSlain = document.getElementById('report-slain');
+        const reportQuestions = document.getElementById('report-questions');
+        const reportDamage = document.getElementById('report-damage');
+        const reportCasts = document.getElementById('report-casts');
+        const wrongAnswersContainer = document.getElementById('wrong-answers-container');
+
+        // ================= FUNCTIONS =================
+        function initGame() {
+            const savedState = localStorage.getItem('warfareState');
+            if (savedState) {
+                gameState = JSON.parse(savedState);
+            } else {
+                resetGameState();
+            }
+            
+            // ================= FEEL FREE TO CHANGE THE "MULTIPLE CHOICE" TEXT HOWEVER YOU WANT! =================
+            const modeButton = document.getElementById('question-mode-btn');
+            if (modeButton) {
+                modeButton.textContent = `✧ MULTIPLE CHOICE: ${questionMode === 'multiple' ? 'ON' : 'OFF'}`;
+            }
+            
+            spawnEnemy();
+            
+            updateUI();
+            
+            addLog(`A wild ${gameState.enemyName} appeared!`, "enemy");
+            
+            document.body.classList.add('page-transition');
+            setupEventListeners();
+
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+        
+        // ================= IF YOU CHANGED THE PLAYER HP & MAXHP, YOU HAVE TO CHANGE IT HERE TOO! =================
+        function resetGameState() {
+            gameState = {
+                playerHP: 1397,
+                playerMaxHP: 1397,
+                enemyHP: 0,
+                enemyMaxHP: 0,
+                enemyName: "",
+                slainCount: 0,
+                magicBar: 0,
+                maxMagicBar: 5,
+                questionsAnswered: 0,
+                questionsCorrect: 0,
+                totalDamage: 0,
+                magicCasts: 0,
+                wrongAnswers: [],
+                isActionInProgress: false,
+                allQuestions: null,
+                seenQuestions: [],
+                questionTopicKey: null,
+                correctStreak: 0
+
+            };
+        }
+
+        function spawnEnemy() {
+            if (gameState.enemyHP <= 0 || gameState.enemyName === "") {
+                const randomIndex = Math.floor(Math.random() * creaturelist.length);
+                gameState.enemyName = creaturelist[randomIndex];
+                // ================= HP OF ENEMIES TOO HIGH? CHANGE IT! =================
+                gameState.enemyMaxHP = Math.floor(Math.random() * 4000) + 1000;
+                gameState.enemyHP = gameState.enemyMaxHP;
+
+                enemyName.textContent = gameState.enemyName;
+                updateEnemyHP();
+
+                document.getElementById('enemy-panel').classList.add('pulse');
+                setTimeout(() => {
+                    document.getElementById('enemy-panel').classList.remove('pulse');
+                }, 500);
+            }
+        }
+
+        function updateUI() {
+            playerHpText.textContent = gameState.playerHP;
+            const playerHpPercent = (gameState.playerHP / gameState.playerMaxHP) * 100;
+            playerHpBar.style.width = `${playerHpPercent}%`;
+
+            updateEnemyHP();
+            updateMagicBar();
+
+            slainCount.textContent = gameState.slainCount;
+            questionsCount.textContent = `${gameState.questionsCorrect}/${gameState.questionsAnswered}`;
+
+            reviveBtn.disabled = gameState.playerHP > 0;
+            castBtn.disabled = gameState.magicBar >= gameState.maxMagicBar || gameState.playerHP <= 0;
+            attackBtn.disabled = gameState.playerHP <= 0 || gameState.magicBar <= 0;
+
+            if (gameState.isActionInProgress) {
+                attackBtn.disabled = true;
+                castBtn.disabled = true;
+                reviveBtn.disabled = true;
+                endBtn.disabled = false;
+            }
+        }
+
+        function updateEnemyHP() {
+            enemyHpText.textContent = gameState.enemyHP;
+            enemyMaxHp.textContent = gameState.enemyMaxHP;
+            const enemyHpPercent = (gameState.enemyHP / gameState.enemyMaxHP) * 100;
+            enemyHpBar.style.width = `${enemyHpPercent}%`;
+        }
+
+        function updateMagicBar() {
+            const segments = magicBar.querySelectorAll('.magic-segment');
+            segments.forEach((segment, index) => {
+                if (index < gameState.magicBar) {
+                    segment.classList.add('active');
+                } else {
+                    segment.classList.remove('active');
+                }
+            });
+        }
+
+        function pulseBothPanels() {
+            const playerPanel = document.getElementById('player-panel');
+            const enemyPanel = document.getElementById('enemy-panel');
+            
+            playerPanel.classList.add('player-attacked');
+            enemyPanel.classList.add('enemy-attacked');
+            
+            setTimeout(() => {
+                playerPanel.classList.remove('player-attacked');
+                enemyPanel.classList.remove('enemy-attacked');
+            }, 500);
+        }
+
+        function addLog(message, type = "neutral") {
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}-log`;
+            logEntry.textContent = message;
+            
+            battleLog.appendChild(logEntry);
+            battleLog.scrollTop = battleLog.scrollHeight;
+        }
+        
+        // ================= IF YOU CHANGED THE "MULTIPLE CHOICE" TEXT, THEN CHANGE THIS TOO! =================
+        function toggleQuestionMode() {
+            questionMode = questionMode === 'text' ? 'multiple' : 'text';
+            const modeButton = document.getElementById('question-mode-btn');
+            modeButton.textContent = `✧ MULTIPLE CHOICE: ${questionMode === 'multiple' ? 'ON' : 'OFF'}`;
+    
+            showNotification(`Question mode set to: ${questionMode.toUpperCase()}`, true);
+        }
+
+        function generateChoices(question, correctAnswer) {
+            let choices = [];
+
+            const MAX_CHOICES = 4;
+            const VARIANT_OFFSETS = {
+                year: [-1, -2, +1, +2, +3],
+                percent: [-1, -2, +1, +2],
+                number: [-1, -2, +1, +2, +3]
+            };
+            const RANDOM_POOL_COUNT = 4; // how many distractors we try to pull
+
+            const isTFQuestion = question.toLowerCase().includes('true') ||
+                                 question.toLowerCase().includes('false') ||
+                                 question.startsWith('T/F:');
+            if (isTFQuestion) return ['True', 'False'];
+
+            const topicQuestions = getCurrentTopicQuestions();
+            const uniqueAnswers = [...new Set(topicQuestions.map(q => q.answer))];
+            const yearPattern = /\b(19|20)\d{2}\b/;
+            const percentPattern = /(\d+)%/;
+            const numberPattern = /\b\d+\b/;
+            choices = [correctAnswer];
+            const hasYear = yearPattern.test(correctAnswer);
+            const hasPercent = percentPattern.test(correctAnswer);
+            const hasNumber = numberPattern.test(correctAnswer) && !hasYear && !hasPercent;
+
+            function makeVariants(base, regex, offsets) {
+                const match = base.match(regex);
+                if (!match) return [];
+                const baseNum = parseInt(match[0]);
+                return offsets.map(offset => base.replace(match[0], baseNum + offset));
+            }
+
+            function pickRandom(arr, count, exclude = []) {
+                const pool = arr.filter(a => !exclude.includes(a));
+                let result = [];
+                while (result.length < count && pool.length > 0) {
+                    const randIndex = Math.floor(Math.random() * pool.length);
+                    result.push(pool.splice(randIndex, 1)[0]);
+                }
+                return result;
+            }
+
+            if (hasYear) {
+                choices.push(...makeVariants(correctAnswer, yearPattern, VARIANT_OFFSETS.year));
+                const yearAnswers = uniqueAnswers.filter(a => yearPattern.test(a) && a !== correctAnswer);
+                choices.push(...pickRandom(yearAnswers, RANDOM_POOL_COUNT, choices));
+            } else if (hasPercent) {
+                choices.push(...makeVariants(correctAnswer, percentPattern, VARIANT_OFFSETS.percent));
+                const percentAnswers = uniqueAnswers.filter(a => percentPattern.test(a) && a !== correctAnswer);
+                choices.push(...pickRandom(percentAnswers, RANDOM_POOL_COUNT, choices));
+            } else if (hasNumber) {
+                choices.push(...makeVariants(correctAnswer, numberPattern, VARIANT_OFFSETS.number));
+                const numberAnswers = uniqueAnswers.filter(
+                    a => numberPattern.test(a) && !yearPattern.test(a) && !percentPattern.test(a) && a !== correctAnswer
+                );
+                choices.push(...pickRandom(numberAnswers, RANDOM_POOL_COUNT, choices));
+            } else {
+                const textAnswers = uniqueAnswers.filter(a => !numberPattern.test(a) && a !== correctAnswer);
+                choices.push(...pickRandom(textAnswers, RANDOM_POOL_COUNT, choices));
+            }
+            choices = shuffleArray([...new Set(choices)]).slice(0, MAX_CHOICES);
+
+
+            if (!choices.includes(correctAnswer)) {
+                choices[0] = correctAnswer;
+                choices = shuffleArray(choices);
+            }
+
+            return choices;
+        }
+
+        function getCurrentTopicQuestions() {
+            try {
+                const libraryData = JSON.parse(localStorage.getItem('libraryData'));
+                if (!libraryData || !libraryData.priorityTopic) return [];
+        
+                const subject = libraryData.subjects[libraryData.priorityTopic.subjectIndex];
+                const topic = subject.topics[libraryData.priorityTopic.topicIndex];
+        
+                return topic.questions || [];
+            } catch (e) {
+                console.error("Error getting topic questions:", e);
+                return [];
+            }
+        }
+
+        function shuffleArrayComment(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function getNextFromCycle(key, cycle, fullSet) {
+            const next = cycle.shift(); 
+            if (cycle.length === 0) {
+                cycle = shuffleArrayComment([...fullSet]); 
+            }
+            localStorage.setItem(key, JSON.stringify(cycle)); 
+            return [next, cycle]; 
+        }
+
+        function playerAttack() {
+            if (gameState.playerHP <= 0 || gameState.isActionInProgress) return;
+            
+            gameState.isActionInProgress = true;
+            updateUI();
+            
+            // ================= IS YOUR ATK IS TOO LOW? CHANGE IT! =================
+            const damage = Math.floor(Math.random() * 400) + 300;
+            gameState.enemyHP -= damage;
+            gameState.totalDamage += damage;
+            
+            if (gameState.magicBar > 0) {
+                gameState.magicBar--;
+                updateMagicBar();
+            }
+
+            if (gameState.enemyHP < 0) gameState.enemyHP = 0;
+            
+            updateEnemyHP();
+            
+            addLog(`You attack ${gameState.enemyName} for ${damage} damage!`, "player");
+
+            showDamageEffect(damage, "enemy");
+
+            if (gameState.enemyHP <= 0) {
+                enemyDeath();
+            } else {
+                setTimeout(() => {
+                    enemyAttack();
+                }, 1000);
+            }
+            
+            saveGameState();
+        }
+
+        function enemyAttack() {
+            if (gameState.enemyHP <= 0 || gameState.playerHP <= 0) {
+                gameState.isActionInProgress = false;
+                updateUI();
+                return;
+            }
+
+            setTimeout(() => {
+                const enemyPanel = document.getElementById('enemy-panel');
+                const playerPanel = document.getElementById('player-panel');
+                
+                // ================= CHANGE PERCENTAGES AS MUCH AS YOU WANT! =================
+                const isMiss = Math.random() <= 0.05;
+                const isCrit = !isMiss && Math.random() <= 0.20;
+                
+                let damage = 0;
+                
+                if (isMiss) {
+                    damage = 0;
+                    enemyPanel.classList.add('miss-attack');
+                    setTimeout(() => enemyPanel.classList.remove('miss-attack'), 500);
+                    addLog(`${gameState.enemyName}'s attack missed!`, "neutral");
+                }
+                else if (isCrit) {
+                    damage = gameState.playerHP; // Instant KO, No plans to change this unfortunately...
+                    enemyPanel.classList.add('crit-attack');
+                    setTimeout(() => enemyPanel.classList.remove('crit-attack'), 500);
+                    addLog(`CRITICAL HIT! ${gameState.enemyName} has defeated you!`, "critical");
+                }
+                else {
+                    // ================= ENEMY ATK TOO HIGH/LOW? CHANGE IT! =================
+                    damage = Math.floor(Math.random() * 300) + 200;
+                    addLog(`${gameState.enemyName} attacks you for ${damage} damage!`, "enemy");
+                }
+                
+                gameState.playerHP -= damage;
+
+                if (gameState.playerHP < 0) gameState.playerHP = 0;
+
+                updateUI();
+                
+                if (!isMiss) {
+                    playerPanel.classList.add('enemy-attacked');
+                    setTimeout(() => playerPanel.classList.remove('enemy-attacked'), 500);
+
+                    showDamageEffect(damage, "player");
+                }
+
+                if (gameState.playerHP <= 0) {
+                    addLog("You have been defeated! Use REVIVE to continue.", "critical");
+                }
+                
+                gameState.isActionInProgress = false;
+                updateUI();
+
+                saveGameState();
+            }, 500);
+        }
+
+        function enemyDeath() {
+            gameState.slainCount++;
+
+            addLog(`You defeated ${gameState.enemyName}!`, "player");
+            addLog(`${gameState.slainCount} enemies slain!`, "critical");
+
+            const enemyPanel = document.getElementById('enemy-panel');
+            enemyPanel.classList.add('shake');
+
+            setTimeout(() => {
+                enemyPanel.classList.remove('shake');
+                spawnEnemy();
+                addLog(`A wild ${gameState.enemyName} appeared!`, "enemy");
+                gameState.isActionInProgress = false;
+                updateUI();
+            }, 1500);
+
+            saveGameState();
+        }
+        
+        function castAction() {
+            if (gameState.magicBar >= gameState.maxMagicBar || gameState.isActionInProgress || gameState.playerHP <= 0) return;
+    
+            gameState.isActionInProgress = true;
+            updateUI();
+  
+            currentQuestionContext = 'cast';
+            showQuestionPopup();
+            gameState.isActionInProgress = false;
+            updateUI();
+    
+            saveGameState();
+        }
+
+        function getPrioritizedSubjectQuestions() {
+            const libraryData = localStorage.getItem('libraryData');
+            if (!libraryData) return [];
+            
+            try {
+                const lib = JSON.parse(libraryData);
+
+                if (!lib.priorityTopic) return [];
+                
+                const subjectIndex = lib.priorityTopic.subjectIndex;
+                const topicIndex = lib.priorityTopic.topicIndex;
+                
+                if (!lib.subjects[subjectIndex] || !lib.subjects[subjectIndex].topics[topicIndex]) {
+                    return [];
+                }
+
+                return lib.subjects[subjectIndex].topics[topicIndex].questions;
+            } catch (e) {
+                console.error("Error loading library data:", e);
+                return [];
+            }
+        }
+
+        function getNextQuestion() {
+            const prioritizedQuestions = getPrioritizedSubjectQuestions();
+            const isUsingPriority = prioritizedQuestions.length > 0;
+            const questionPool = isUsingPriority ? prioritizedQuestions : [
+                { question: "Prioritize a topic! Type 'Yes'", answer: "Yes" }
+            ];
+
+            let newTopicKey = null;
+            try {
+                const lib = JSON.parse(localStorage.getItem('libraryData'));
+                if (lib?.priorityTopic) {
+                    newTopicKey = `${lib.priorityTopic.subjectIndex}_${lib.priorityTopic.topicIndex}`;
+                }
+            } catch (e) {}
+
+            const topicChanged = newTopicKey !== gameState.questionTopicKey;
+            const exhausted = !gameState.allQuestions || gameState.seenQuestions.length >= gameState.allQuestions.length;
+
+            if (topicChanged || exhausted || !gameState.allQuestions) {
+                gameState.allQuestions = [...questionPool];
+                shuffleArray(gameState.allQuestions);
+                gameState.seenQuestions = [];
+                gameState.questionTopicKey = newTopicKey;
+            }
+
+            const unseen = gameState.allQuestions.filter(q => !gameState.seenQuestions.includes(q));
+            const nextQuestion = unseen[Math.floor(Math.random() * unseen.length)];
+
+            gameState.seenQuestions.push(nextQuestion);
+            return nextQuestion;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+
+        function showQuestionPopup() {
+            currentQuestion = getNextQuestion();
+            currentQuestionEl.textContent = currentQuestion.question;
+            answerInput.value = "";
+            selectedChoice = null;
+
+            if (questionMode === 'text') {
+                answerInput.style.display = 'block';
+                document.getElementById('multiple-choice-container').style.display = 'none';
+            } else {
+                answerInput.style.display = 'none';
+                document.getElementById('multiple-choice-container').style.display = 'block';
+        
+                currentChoices = generateChoices(currentQuestion.question, currentQuestion.answer);
+                renderChoiceButtons();
+            }
+    
+            questionPopup.classList.add('active');
+    
+            if (questionMode === 'text') {
+                answerInput.focus();
+            }
+        }
+
+        function renderChoiceButtons() {
+            const container = document.getElementById('choice-buttons');
+            container.innerHTML = '';
+    
+            currentChoices.forEach((choice, index) => {
+                const button = document.createElement('button');
+                button.className = 'choice-btn';
+                button.textContent = choice;
+                button.onclick = () => {
+                    document.querySelectorAll('.choice-btn').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+
+                    button.classList.add('selected');
+                    selectedChoice = choice;
+                };
+                container.appendChild(button);
+            });
+        }
+
+        function showCorrectAnswer(question, correctAnswer, userAnswer) {
+            const popup = document.getElementById('correct-answer-popup');
+            const answerText = document.getElementById('correct-answer-text');
+    
+            answerText.innerHTML = `
+                <div style="margin-bottom: 15px;"><strong>Question:</strong> ${question}</div>
+                <div style="margin-bottom: 15px; color: var(--player-color"><strong>Your Answer:</strong> ${userAnswer}</div>
+                <div style="margin-bottom: 15px; color: var(--accent)"><strong>Correct Answer:</strong> ${correctAnswer}</div>
+            `;
+    
+            popup.classList.add('active');
+    
+            setTimeout(() => {
+                if (popup.classList.contains('active')) {
+                    popup.classList.add('fade-out');
+                    setTimeout(() => {
+                        popup.classList.remove('active');
+                        popup.classList.remove('fade-out');
+                    }, 3000);
+                }
+            }, 3000);
+    
+            document.getElementById('close-correct-answer').onclick = () => {
+                popup.classList.remove('active');
+            };
+        }
+
+        function submitAnswerAction() {
+            let userAnswer;
+
+            if (questionMode === 'text') {
+                userAnswer = answerInput.value.trim().toLowerCase();
+            } else {
+                userAnswer = selectedChoice ? selectedChoice.toLowerCase() : null;
+
+                if (!userAnswer) {
+                    showNotification("Please select an answer!", false);
+                    return;
+                }
+            }
+
+            gameState.questionsAnswered++;
+            const correctAnswer = currentQuestion.answer.toLowerCase();
+
+            if (userAnswer === correctAnswer) {
+                gameState.questionsCorrect++;
+                gameState.correctStreak++;
+
+                if (Math.random() < 0.9) {
+                    let comment;
+                    [comment, commentCycle] = getNextFromCycle("commentCycle", commentCycle, positiveComments);
+                    addLog(`❝ ${comment} ❞`, "michael");
+                }
+                
+                // ================= CHANGE GAME STATE NOTIFICATIONS! =================
+                if (currentQuestionContext === 'cast') {
+                    gameState.magicBar++;
+                    gameState.magicCasts++;
+                    addLog("Correct answer! Magic bar increased.", "player");
+                    updateMagicBar();
+                } else if (currentQuestionContext === 'revive') {
+                    const reviveOptions = [0.5, 0.75, 1];
+                    const revivePercent = reviveOptions[Math.floor(Math.random() * reviveOptions.length)];
+                    gameState.playerHP = Math.floor(gameState.playerMaxHP * revivePercent);
+                    gameState.magicBar = 0;
+
+                    let reviveMessage;
+                    if (revivePercent === 0.5) reviveMessage = "Correct! You have been revived with 50% HP.";
+                    else if (revivePercent === 0.75) reviveMessage = "Correct! You have been revived with 75% HP.";
+                    else reviveMessage = "Correct! You have been revived with full HP!";
+
+                    addLog(reviveMessage, "player");
+                }
+
+            } else {
+                gameState.correctStreak = 0;
+
+                gameState.wrongAnswers.push({
+                    question: currentQuestion.question,
+                    correctAnswer: currentQuestion.answer,
+                    userAnswer: userAnswer
+                });
+
+                showCorrectAnswer(currentQuestion.question, currentQuestion.answer, userAnswer);
+
+                if (currentQuestionContext === 'cast') {
+                    addLog("Incorrect answer! The enemy attacks while you're distracted.", "enemy");
+
+                    if (Math.random() < 0.95) {
+                        let taunt;
+                        [taunt, wrongTauntCycle] = getNextFromCycle("wrongTauntCycle", wrongTauntCycle, enemyTaunts.wrong);
+                        addLog(`❝ ${taunt} ❞`, "enemy");
+                        addLog(`Wrong! Question: ${currentQuestion.question} | Your Answer: ${userAnswer} | Correct: ${currentQuestion.answer}`, "critical");
+                    }
+
+                    setTimeout(enemyAttack, 1000);
+                } else if (currentQuestionContext === 'revive') {
+                    addLog("Incorrect! The revival attempt failed.", "critical");
+
+                    if (Math.random() < 0.95) {
+                        let taunt;
+                        [taunt, reviveTauntCycle] = getNextFromCycle("reviveTauntCycle", reviveTauntCycle, enemyTaunts.revive);
+                        addLog(`❝ ${taunt} ❞`, "enemy");
+                        addLog(`Wrong! Question: ${currentQuestion.question} | Your Answer: ${userAnswer} | Correct: ${currentQuestion.answer}`, "critical");
+                    }
+                }
+            }
+
+            currentQuestionContext = null;
+            questionPopup.classList.remove('active');
+            updateUI();
+            saveGameState();
+        }
+
+
+        function reviveAction() {
+            if (gameState.playerHP > 0 || gameState.isActionInProgress) return;
+
+            gameState.isActionInProgress = true;
+            updateUI();
+
+
+            currentQuestionContext = 'revive';
+            showQuestionPopup();
+
+            gameState.isActionInProgress = false;
+            updateUI();
+        }
+        
+        function showDamageEffect(damage, target, isCritical = false) {
+            const container = document.getElementById('damage-container');
+            const effect = document.createElement('div');
+            effect.className = `damage-effect ${target}-damage`;
+            effect.textContent = isCritical ? `CRIT! ${damage}` : damage;
+            effect.style.left = target === "player" ? "20%" : "80%";
+            
+            container.appendChild(effect);
+
+            setTimeout(() => {
+                effect.remove();
+            }, 1000);
+        }
+
+        function endWar() {
+            reportSlain.textContent = gameState.slainCount;
+            reportQuestions.textContent = `${gameState.questionsCorrect}/${gameState.questionsAnswered}`;
+            reportDamage.textContent = gameState.totalDamage;
+            reportCasts.textContent = gameState.magicCasts;
+
+            wrongAnswersContainer.innerHTML = '<h3>QUESTIONS TO REVIEW:</h3>';
+            if (gameState.wrongAnswers.length > 0) {
+                gameState.wrongAnswers.forEach(wrong => {
+                    const item = document.createElement('div');
+                    item.className = 'wrong-item';
+                    item.innerHTML = `
+                        <div><strong>Question:</strong> ${wrong.question}</div>
+                        <div><strong>Your answer:</strong> ${wrong.userAnswer}</div>
+                        <div><strong>Correct answer:</strong> ${wrong.correctAnswer}</div>
+                    `;
+                    wrongAnswersContainer.appendChild(item);
+                });
+            } else {
+                wrongAnswersContainer.innerHTML += '<div>No questions to review! Perfect battle!</div>';
+            }
+
+            endwarPopup.classList.add('active');
+        }
+
+        function downloadReport() {
+            // ================= BATTLE REPORT EDITABLE VERSION =================
+            let report = `===== BATTLE REPORT =====\n\n`;
+            report += `Enemies Slain: ${gameState.slainCount}\n`;
+            report += `Questions Answered: ${gameState.questionsCorrect}/${gameState.questionsAnswered}\n`;
+            report += `Total Damage Dealt: ${gameState.totalDamage}\n`;
+            report += `Magic Casts: ${gameState.magicCasts}\n\n`;
+            
+            report += `===== QUESTIONS TO REVIEW =====\n\n`;
+            if (gameState.wrongAnswers.length > 0) {
+                gameState.wrongAnswers.forEach((wrong, index) => {
+                    report += `Question ${index + 1}:\n`;
+                    report += `  Question: ${wrong.question}\n`;
+                    report += `  Your Answer: ${wrong.userAnswer}\n`;
+                    report += `  Correct Answer: ${wrong.correctAnswer}\n\n`;
+                });
+            } else {
+                report += `No questions to review! Perfect battle!\n`;
+            }
+            
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'warfare_report.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function newBattle() {
+            resetGameState();
+            spawnEnemy();
+            updateUI();
+
+            battleLog.innerHTML = '<div class="log-entry">Battle started! Prepare for combat...</div>';
+
+            endwarPopup.classList.remove('active');
+
+            addLog(`A wild ${gameState.enemyName} appeared!`, "enemy");
+
+            saveGameState();
+        }
+
+        function saveGameState() {
+            localStorage.setItem('warfareState', JSON.stringify(gameState));
+        }
+
+        function setupEventListeners() {
+            attackBtn.addEventListener('click', playerAttack);
+            castBtn.addEventListener('click', castAction);
+            reviveBtn.addEventListener('click', reviveAction);
+            endBtn.addEventListener('click', endWar);
+            submitAnswer.addEventListener('click', submitAnswerAction);
+            document.getElementById('download-report').addEventListener('click', downloadReport);
+            document.getElementById('new-battle').addEventListener('click', newBattle);
+
+            answerInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    submitAnswerAction();
+                }
+            });
+
+            document.querySelectorAll('.close-popup').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.popup-overlay').forEach(popup => {
+                        popup.classList.remove('active');
+                    });
+                });
+            });
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            const timeStr = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('datetime').textContent = `${dateStr} | ${timeStr}`;
+        }
+
+        function navigateTo(url) {
+            document.body.style.animation = 'fadeOut 0.5s ease-out';
+            setTimeout(() => {
+                window.location.href = url;
+            }, 450);
+        }
+
+        setInterval(updateTime);
+        document.body.classList.add('page-transition');
+        
+        initGame();
+    </script>
+</body>
+</html>
