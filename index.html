@@ -11,80 +11,172 @@
             --accent: #00ff9d;
             --text: #ffffff;
             --border: #2a2a2a;
+            --dim-text: #aaaaaa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Courier New', monospace;
             background: var(--main-bg);
             color: var(--text);
-            margin: 0;
-            padding: 20px;
             min-height: 100vh;
+            padding: 15px;
+            padding-bottom: 100px;
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(0, 255, 157, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 255, 157, 0.05) 0%, transparent 20%);
         }
 
         .profile-header {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 20px;
-            margin-bottom: 30px;
+            text-align: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
         }
 
         .profile-pic {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             border: 3px solid var(--accent);
             object-fit: cover;
             box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
         }
 
-        .cyber-panel {
+        .profile-info {
+            text-align: center;
+        }
+
+        .profile-title {
+            color: var(--accent);
+            font-size: clamp(1.4rem, 5vw, 2rem);
+            margin: 0;
+            text-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+        }
+
+        .profile-rank {
+            font-size: clamp(0.9rem, 3vw, 1.2rem);
+            margin: 5px 0 0 0;
+            color: var(--dim-text);
+        }
+
+        .stats-panel {
             background: var(--panel-bg);
             border: 2px solid var(--border);
-            padding: 20px;
-            margin: 10px;
-            position: relative;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
             box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
         }
 
         .stat-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin: 15px 0;
         }
 
         .stat-item {
-            padding: 10px;
-            background: #000;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--border);
+            border-radius: 8px;
             text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .stat-label {
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 4px;
+        }
+
+        .quests-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+        }
+
+        .panel-header {
+            color: var(--accent);
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
         }
 
         .quest-list {
             max-height: 300px;
             overflow-y: auto;
             margin: 15px 0;
+            border-radius: 6px;
         }
 
         .quest-item {
-            padding: 10px;
-            margin: 5px 0;
-            background: #000;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(0, 0, 0, 0.3);
             border-left: 3px solid var(--accent);
+            border-radius: 6px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .quest-description {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .quest-rewards {
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .quest-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .empty-quests {
+            padding: 20px;
+            text-align: center;
+            color: var(--dim-text);
+            font-style: italic;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
         }
 
         .cyber-button {
             background: none;
             border: 2px solid var(--accent);
             color: var(--text);
-            padding: 8px 15px;
+            padding: 12px 15px;
             cursor: pointer;
             text-transform: uppercase;
             transition: all 0.3s;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            flex: 1;
         }
 
         .cyber-button:hover {
@@ -93,24 +185,84 @@
             box-shadow: 0 0 15px var(--accent);
         }
 
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
         .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.95);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .cyber-popup {
             background: var(--panel-bg);
-            padding: 30px;
-            width: 500px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
             border: 2px solid var(--accent);
+            border-radius: 12px;
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.2);
+        }
+
+        .popup-header {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .popup-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: #000;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+        }
+
+        textarea.popup-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .popup-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .popup-stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .popup-stat-input {
+            width: 60px;
+            padding: 8px;
+            background: #000;
+            border: 1px solid var(--accent);
+            color: var(--text);
+            border-radius: 4px;
+            text-align: center;
         }
 
         .bottom-bar {
@@ -119,15 +271,49 @@
             left: 0;
             right: 0;
             background: var(--panel-bg);
-            padding: 15px 20px;
+            padding: 12px 15px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 10px;
             border-top: 2px solid var(--accent);
+            z-index: 1000;
+        }
+
+        .nav-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .nav-button {
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            padding: 10px 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .nav-button:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .utility-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
         }
 
         .time-display {
             color: var(--accent);
+            font-size: 0.8rem;
+            text-align: center;
+            order: -1;
+            margin-bottom: 5px;
         }
 
         .completion-overlay {
@@ -136,28 +322,205 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 3000;
             display: none;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .completion-popup {
             background: var(--panel-bg);
             border: 3px solid var(--accent);
-            padding: 40px;
+            padding: 25px;
             text-align: center;
             box-shadow: 0 0 50px rgba(0, 255, 157, 0.5);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
         }
-        
-        .page-transition {
-            animation: fadeIn 0.5s ease-in;
+
+        .completion-header {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
         }
-        
+
+        .completion-rewards {
+            font-size: 1.2rem;
+            margin: 20px 0;
+            color: var(--accent);
+        }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-transition {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--panel-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        .remove-quest-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        .remove-quest-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 30px;
+                padding-bottom: 100px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            
+            .profile-header {
+                flex-direction: row;
+                text-align: left;
+                padding: 20px;
+            }
+            
+            .profile-pic {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .profile-info {
+                text-align: left;
+            }
+            
+            .stat-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .quest-item {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .quest-actions {
+                margin-top: 0;
+            }
+            
+            .bottom-bar {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .nav-buttons {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 10px;
+            }
+            
+            .nav-button {
+                padding: 12px 10px;
+                font-size: 0.9rem;
+            }
+            
+            .time-display {
+                order: 0;
+                text-align: right;
+                flex: 1;
+                margin-bottom: 0;
+            }
+            
+            .utility-buttons {
+                flex: 2;
+                justify-content: center;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                display: grid;
+                grid-template-columns: 300px 1fr;
+                gap: 30px;
+                align-items: start;
+            }
+            
+            .profile-header {
+                grid-column: 1 / -1;
+            }
+            
+            .stats-panel {
+                margin-bottom: 0;
+            }
+            
+            .quests-panel {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .utility-buttons {
+                flex-direction: column;
+            }
+            
+            .cyber-button {
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            .profile-header {
+                flex-direction: row;
+                padding: 10px;
+            }
+            
+            .profile-pic {
+                width: 60px;
+                height: 60px;
+            }
+            
+            .quest-list {
+                max-height: 150px;
+            }
+            
+            .bottom-bar {
+                padding: 10px;
+            }
         }
     </style>
     </head>
