@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--  ================= RENAME BROWSER DISPLAY NAME HERE: ================= -->
+    <title>Kingdom of Spirits</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <style>
+        :root {
+            --main-bg: #0a0a0a;
+            --panel-bg: #1a1a1a;
+            --accent: #00ff9d;
+            --text: #ffffff;
+            --border: #2a2a2a;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--main-bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            padding-bottom: 120px;
+        }
+
+        .cyber-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--border);
+            padding: 20px;
+            margin: 10px 0;
+            position: relative;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.1);
+        }
+
+        .ally-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+
+        .ally-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #000;
+            border-left: 3px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .journey-log {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+            padding: 10px;
+            background: #000;
+        }
+
+        .cyber-button {
+            background: none;
+            border: 2px solid var(--accent);
+            color: var(--text);
+            padding: 8px 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+            margin: 5px 0;
+            transition: all 0.3s;
+        }
+
+        .cyber-button:hover {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        .npc-section {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .npc-portrait {
+            width: 120px;
+            height: 180px;
+            border: 3px solid var(--accent);
+            object-fit: cover;
+            box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+        }
+
+        .affinity-bar {
+            height: 8px;
+            background: #000;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .affinity-progress {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .companion-message {
+            margin-top: 15px;
+            padding: 10px;
+            background: #00000055;
+            border-left: 3px solid var(--accent);
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .show-message {
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        .bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--panel-bg);
+            padding: 15px 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border-top: 2px solid var(--accent);
+            z-index: 1000;
+        }
+
+        .currency-display {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .currency-item {
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .companion-controls {
+            display: flex;
+            gap: 10px;
+            margin-right: 15px;
+        }
+
+        #companion-name {
+            font-size: 1.2em;
+            color: var(--accent);
+            margin-bottom: 5px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .popup {
+            background: var(--panel-bg);
+            padding: 30px;
+            border: 2px solid var(--accent);
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.5);
+        }
+
+        .interaction-popup {
+            text-align: center;
+        }
+
+        .interaction-popup h3 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+
+        .rename-input {
+            width: 100%;
+            padding: 10px;
+            margin: 15px 0;
+            background: #000;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .popup-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .page-transition {
+            animation: fadeIn 0.5s ease-in;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-panel">
+    <!--  ================= RENAME THE KINGDOM HERE: ================= -->
+        <h1 style="color: var(--accent);">𓆩⚚𓆪 THE KINGDOM OF SPIRITS ─.✦</h1>
+        
+
+    <div class="cyber-panel">
+        <div class="npc-section">
+            <img id="companion-portrait" src="CompanionPortrait.png" class="npc-portrait" alt="Companion">
+            <div>
+                <!-- WARNING: THESE ARE PLACEHOLDERS! TO CUSTOMIZE, EDIT companion_template.txt! -->
+                <div id="companion-name">COMPANION</div>
+                <h3 id="companion-title" style="margin:0">UNKNOWN</h3>
+                <div id="companion-affinity">Affinity: Stranger</div>
+                <div class="affinity-bar">
+                    <div class="affinity-progress" style="width: 0%"></div>
+                </div>
+                <div class="companion-message" id="companion-message"></div>
+                <div style="margin-top:15px; display:flex; gap:10px">
+                    <button class="cyber-button" onclick="increaseAffinity()">USE CANDY (500 🪙)</button>
+                    <button class="cyber-button" onclick="interactWithCompanion()">INTERACT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="cyber-panel">
+      <!--  ================= RENAME THE "LIST OF COMPANIONS" HEADER HERE: ================= -->
+      <h2>♞⊹₊ List of Companions .⋆⸙</h2>
+      <div class="ally-list" id="ally-list"></div>
+    </div>
+
+    <div class="cyber-panel">
+      <!--  ================= RENAME THE "KINGDOM HERE:"ALLY JOURNEY LOG" HEADER HERE: ================= -->
+      <h2>𓆰⸸𓆪 Ally Journey Log ᝰ.ᐟ</h2>
+      <div class="journey-log" id="journey-log"></div>
+      </div>
+    </div>
+
+
+    <div class="bottom-bar">
+        <button class="cyber-button" onclick="navigateTo('index.html')">𖠿 RETURN</button>
+        <div class="companion-controls">
+            <button class="cyber-button" onclick="saveCompanion()">༄ SAVE COMPANION</button>
+            <button class="cyber-button" onclick="loadCompanion()">☁ LOAD COMPANION</button>
+        </div>
+        
+        <div class="currency-display">
+            <div class="currency-item">
+                <span>🪙</span>
+                <span id="coins">0</span>
+            </div>
+            <div class="currency-item">
+                <span>🍬</span>
+                <span id="candies">0</span>
+            </div>
+        </div>
+        <button class="cyber-button" onclick="buyCandy()">BUY CANDY</button>
+    </div>
+
+    <div class="overlay" id="interaction-overlay">
+        <div class="popup interaction-popup">
+            <h3 id="interaction-title">Interaction</h3>
+            <div id="interaction-content"></div>
+            <div class="popup-buttons">
+                <button class="cyber-button" onclick="document.getElementById('interaction-overlay').style.display = 'none'">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="rename-overlay">
+        <div class="popup">
+            <!--  ================= RENAME THE RENAMING HEADER HERE: ================= -->
+            <h3>Bestow A Name!</h3>
+            <input type="text" id="ally-new-name" class="rename-input" placeholder="Enter new name">
+            <div class="popup-buttons">
+                <button class="cyber-button" onclick="confirmRename()">CONFIRM</button>
+                <button class="cyber-button" onclick="document.getElementById('rename-overlay').style.display = 'none'">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= CONSTANTS FOR THE CODE, FEEL FREE TO CUSTOMIZE! =================
+        const creaturelist = ["Mosscat","Glowtoad","Willowisp","Dusthare","Pinesnail","Bramblefox","Emberdrake","Crystalfin","Shadeowl","Starstag","Lanternmoth","Runeslug","Dreamdeer","Mirrorfox","Thistlemane","Fluffbat","Gloomrat","Skyheron","Whisperfish","Sunbear","Mireling","Mistwolf","Flickermouse","Candlebeetle","Ashbadger","Groveantler","Glimmerhound","Frostnewt","Moonmouse","Echojay","Veilstag","Rootserpent","Nimbushog","Flamevole","Glowhopper","Cobblecrab","Dustlark","Twilight Raven","Rubblebark","Cloudleech","Orchidnymph","Fernweasel","Mirejay","Woollytoad","Sunmoth","Copperrat","Dewotter","Tanglekit","Sparkslug","Shadeling","Nightroost","Hollowstag","Siltlizard","Quillbeast","Honeybark","Rainhare","Clifftern","Feyrat","Loamwolf","Stoneblink","Emberfox","Lilacram","Gold Finx","Wispweasel","Duskadder","Grotkoi","Bellmouse","Mothcat","Witherjay","Groveowl","Thundertuft","Fuzzcrab","Riverlamp","Meadowram","Scorchweasel","Cloudpup","Thorncricket","Lanternjay","Bristletoad","Seastag","Cindersnake","Puffermoth","Glintcat","Splashhound","Mossraven","Nettleboar","Pebblemouse","Windlemole","Arcaneelk","Candlecarp","Skyviper","Muddleroot","Gloamcat","Shiverotter","Petalbat","Briarjack","Spicebeetle","Stormhare","Bubblenewt","Ghostjay","Frostflit","Shadow Finch","Gladecap","Thistlehog","Duskwren","Vine Lynx","Moon Drake","Berrybat","Murk Turtle","Gustling","Thornpaw","Silver Whelk","Candle Rat","Flickerfin","Wildjay","Glow Fox","Frost Gator","Night Cap","Spindle Frog","Marblecat","Bramble Gull","Mire Piglet","Crisp Moth","Tundra Cat","Ember Lynx","Velvet Gull","Fuzz Viper","Duskmite","Loom Ferret","Stilt Hopper","Snowslug","Grove Drake","Whistle Fawn","Thistle Rat","Flint Frog","Hollow Raven","Glimmer Jay","Violet Weasel","Tarn Owl","Whisper Stag","Lichen Elk","Storm Cub","Bluff Hare","Dew Viper","Cloud Koi","Burrow Bat","Dust Jay","Gravel Hen","Echo Dog","Moss Gator","Night Lamp","Bark Spider","Cricket Boar","Snow Finch","Pebble Lynx","Lilypad Toad","Gloam Rabbit","Spark Dog","Willow Gull","Rune Mite","Meadow Drake","Sun Cap","Moon Slink","Nettle Fawn","Glowbell Snail","Murk Duck","Silver Drake","Cloud Bear","Pollen Beetle","Flicker Owl","Grub Hog","Tangle Hare","Driftling","Shellcat","Veil Ram","Spindle Jay","Owl Wisp","Crag Rabbit","Ash Vole","Bubble Finch","Star Spider","Fog Whelp","Pine Piglet","Bristle Cub","Mellow Beetle","Ashling","Soot Hen","Lantern Drake","Puddle Otter","Frost Cub","Chime Frog","Blossom Tern","Woolly Jay","Marrow Weasel","Nectar Wasp","Tide Dog","Plume Drake","Cave Finch","Flint Owl","Grove Cub","Sugar Cap","Cinder Fawn","Dusklight Hare","Wispcat","Murk Mite","Lantern Otter","Bloom Drake","Root Owl","Stormy Mole","Firecap Spider","Tarn Fox","River Cub","Cloud Finch","Wyrmlet","Velvet Mole","Ash Cap","Shiver Bat","Violet Moth","Thorn Hound","Drizzle Cub","Fog Fox","Lush Vole","Echo Owl","Berry Mouse","Loom Wren","Star Pup","Meadow Owl","Glowtooth","Hearth Cat","Bark Wolf","Runestone Mole","Rain Pika","Candle Crawler","Dusty Drake","Glim Cap","Shimmer Hog","Shadow Cub","Fey Finch","Ash Beetle","Dew Snake","Bark Drake","Silk Spider","Flicker Whelp","Fluff Moth","Gust Cub","Crisp Fox","Mire Newt","Whim Jay","Quill Vole","Nettle Gull","Glide Mite","Pebble Pup","Brim Fox","Fog Hare","Crag Beetle","Thorny Toad","Whistle Mole","Lantern Cub","Tide Rabbit","Starlit Tern"];
+
+        const creaturepersonalitylist = ["Lazy","Helpful","Honest","Brave","Cowardly","Optimistic","Pessimistic","Quick-witted","Stubborn","Loyal","Distrustful","Kind","Compassionate","Apathetic","Jealous","Spiteful","Generous","Caring","Curious","Protective","Overconfident","Insecure","Modest","Vain","Reckless","Thoughtful","Impulsive","Anxious","Jealous","Patient","Eager","Diligent","Creative","Resourceful","Impatient","Perfectionist","Funny","Sarcastic","Understanding","Manipulative","Humble","Bossy","Self-sufficient","Adventurous","Rigid","Calm","Spontaneous","Impulsive","Shy","Assertive","Curious","Sympathetic","Frustrated","Inconsiderate","Cheerful","Reckless","Perceptive","Mischievous","Responsible","Disorganized","Distractible","Sensitive","Emotional","Unpredictable","Pessimistic","Naive","Independent","Confident","Gullible","Indecisive","Trustworthy","Discreet","Rude","Disloyal","Reserved","Unpredictable","Sociable","Stubborn","Unambitious","Insightful","Enthusiastic","Selfless","Self-centered","Obedient","Friendly","Adventurous","Serious","Calm","Sensitive","Impulsive","Untrustworthy","Manipulative","Skeptical","Diligent","Introverted","Outgoing","Gregarious","Unemotional","Compulsive","Loyal","Romantic","Carefree"];
+
+        const creatureactionlist = ["Scratching a tree", "Whistling a tune", "Staring at the clouds", "Shaking their head", "Bouncing a ball", "Cleaning their sword", "Muttering under their breath", "Checking the sky", "Staring into the distance", "Dusting off their boots", "Tracing symbols in the dirt", "Playing with a pebble", "Humming a song", "Picking flowers", "Sharpening their dagger", "Wiping sweat from their brow", "Picking their teeth", "Tapping their foot", "Adjusting their armor", "Shuffling through a pack", "Glancing around nervously", "Yawning", "Stretching their legs", "Throwing stones in the water", "Writing something down", "Leaning against a tree", "Taking a deep breath", "Cleaning their nails", "Whittling a piece of wood", "Pulling a loose thread from their cloak", "Laughing at nothing", "Glancing around suspiciously", "Swatting away an insect", "Plucking leaves from a bush", "Skipping a rock", "Holding a conversation with a bird", "Dropping a stone into the river", "Tuning an instrument", "Counting coins", "Drawing a map", "Speaking to no one in particular", "Juggling small rocks", "Adjusting a hat", "Twiddling their fingers", "Stretching their arms", "Drumming their fingers on a table", "Smiling at a joke", "Picking their nose", "Hopping over a puddle", "Shaking out their cloak", "Leaning over a ledge", "Looking for something lost", "Arranging supplies neatly", "Playing with a small trinket", "Sighing deeply", "Scratching their head", "Blowing on their hands", "Fidgeting with their belt", "Grumbling about something", "Mumbling to themselves", "Rolling up their sleeves", "Looking over their shoulder", "Laughing at an old memory", "Tapping their weapon", "Lighting a match", "Grinning at a pun", "Picking a fight with a friend", "Blinking rapidly", "Shaking their head in disbelief", "Sniffing the air", "Giving a quick glance", "Picking something up off the ground", "Flipping through a book", "Throwing a rock at a tree", "Clapping their hands", "Spinning around in circles", "Clapping to the beat of a song", "Staring into a fire", "Talking to themselves", "Chasing after a butterfly", "Adjusting a collar", "Shaking out their hair", "Smirking at a challenge", "Checking their reflection", "Looking lost in thought", "Staring at a glowing object", "Squinting at something far away", "Fidgeting with a coin", "Sneezing", "Clearing their throat", "Scratching their back", "Hiding a yawn", "Holding a conversation with a creature", "Talking to the wind", "Stepping over a branch", "Checking the time", "Testing the strength of a rope", "Setting up camp", "Collecting firewood", "Munching on a snack", "Sitting on the ground", "Leaning back to stretch", "Feeling the ground beneath them", "Balancing on one foot", "Hugging a tree", "Taking off their gloves", "Dusting off their cloak", "Sliding down a hill", "Balancing something on their head", "Picking berries", "Fiddling with their ring", "Running their fingers through their hair", "Tossing a coin into the air", "Taking a nap", "Tapping their chin", "Shifting from foot to foot", "Holding a leaf up to the light", "Fixing their shoes", "Examining a rock", "Playing with a dog", "Scraping mud off their boots", "Picking up a shell", "Looking for a shadow to rest in", "Skipping over a log", "Napping on a bench", "Letting their cloak billow in the wind", "Resting their head against something", "Smiling at a cute creature", "Drawing on a piece of paper", "Checking their pocket for something"];
+
+        const placeslist = ["Whispering Pines","Moonwell Sanctuary","The Velvet Spire","Lanternlight Market","The Crystal Archives","Starfall Amphitheatre","The Everwarm Hearth","Mistvale Gardens","Sunset Watchtower","The Hollow of Echoes","Embermoss Library","The Glimmering Docks","Fablewind Square","The Cauldron Court","Dreammoss Hollow","The Luminous Hall","Oakshade Commons","The Cloudberry Grove","The Bellflower Abbey","Wyrmwhistle Cavern","The Azure Loom","The Candlevine Walk","Halcyon Springs","The Thistlebound Tower","Seraph's Nest","The Hearthroot Vaults","Glintrock Crossing","The Duskmire Arcade","The Auroral Garden","Bramblewine Alley"];
+
+        const actionlist = ["smiling at the wind","enjoying the view","feeding a mosscat","listening to the trees whisper","writing poems in the shade","collecting glowing stones","tracing runes into the soil","floating leaves in the fountain","sharing bread with a stranger","watching lanterns drift by","daydreaming under a willow","petting a sleepy creature","laughing near the fire","reading in a hammock","leaving coins for the spirits","wandering without a map","watching clouds pass overhead","gathering herbs for tea","skipping stones across a pond","whistling into the breeze","resting beside a crystal pool","braiding flowers into your hair","chasing fireflies at dusk","listening to bard songs","drawing symbols in the dust","making a wish at a well","gently touching ancient bark","drinking from a cold spring","humming to the stars","watching the sunrise in silence","talking to a curious bird","dancing in a rainshower","tasting sweet mossfruit","telling a story to the wind","writing letters to no one","curling up by the hearth","following a glowing trail","tending to a quiet shrine","placing pebbles on a cairn","carving a sigil in wood","sitting with a sleepy fox","finding shapes in the clouds","climbing a sun-warmed rock","watching fish in the stream","napping under a mushroom cap","sketching with a charcoal stick","singing softly to yourself","picking berries from a bush","lighting a candle in the dark","building a tiny leaf boat","sipping tea on a mossy bench","pressing flowers into a book","combing a unicorn’s mane","writing names in the sand","swinging from a vine","listening to temple bells","wandering a petal-strewn path","spinning slowly in the mist","feeding birds from your palm","walking barefoot in the grass","tying ribbons to a tree","giving thanks to the wind","counting the stars","playing a soft tune on a flute","offering honey to a sprite","watching the fire crackle","whittling a small charm","picking out a perfect stone","laying flowers on a doorstep","balancing on an old log","sitting quietly in a grove","folding paper birds","carrying water from the stream","following butterfly trails","petting a gentle stag","kicking through autumn leaves","gathering feathers for a charm","smoothing a stone altar","drumming your fingers in rhythm","shining a lantern for travelers","handing out warm bread","stargazing with a friend","skipping in a circle","plucking strings on a lute","digging a hole for planting","decorating a tiny shrine","tending to a moss garden","peeking into fairy rings","stretching in the morning light","patting a stone for good luck","listening to distant thunder","writing your name in dew","taking a nap under ivy","smiling at someone passing by","watching fireflies flicker","offering petals to the stream","leaving a note in a hollow","wearing a crown of blossoms","listening to silence","hugging a sleepy friend","watching your breath in the cold"];
+    
+        const feelinglist = ["happiness","excitement","calmness","gratitude","curiosity","nervousness","guilt","hope","pride","disappointment","confusion","loneliness","anger","fear","surprise","joy","shame","boredom","contentment","embarrassment","resentment","anxiety","elation","relaxation","overwhelm","jealousy","satisfaction","refreshment","inspiration","hurt","optimism","mourning","angst","determination","peace","hysteria","tiredness","discomfort","vulnerability","exhaustion","melancholy","amusement","confidence","overjoy","disgust","affection","numbness","sympathy","sentimentality","love","apprehension","spontaneity","disconnection","elusiveness","indifference","ecstasy","empathy","bitterness","regret","nostalgia","silliness","pessimism","romance","relief","agitation","fascination","enchantment","giddiness","worry","zeal","suspicion","devastation","apathy","trust","fulfillment","tranquility","melancholia","mellowness","euphoria","disheartenment","grief","abandonment","reflexivity","amor","conflict","gloom","cheerfulness","chill","distraction","disillusionment","lack of motivation","appreciation","surrealness","genuineness","irritation","crush","fluster","weariness","intrigue"];
+
+        const journeylist = ["peaceful","rocky","adventurous","treacherous","calm","exciting","uneventful","chaotic","uneasy","blissful","uneven","slow","swift","bumpy","long","brief","winding","straightforward","gritty","serene","mysterious","tense","dreamlike","thrilling","glorious","awkward","joyous","frantic","quiet","soothing","heavy","weary","carefree","daring","harrowing","hopeful","unpredictable","frustrating","wild","peaceful","bitter","lush","strenuous","tranquil","exhausting","refreshing","dangerous","wandering","invigorating","breathtaking","steady","frightening","unsettling","magical","worn","mundane","peaceful","blistering","serpentine","harmless","tedious","emotional","fast-paced","inspirational","spirited","unfamiliar","longing","whimsical","grueling","transformative","satisfying","dark","vibrant","shaky","eerie","careful","smooth","disorienting","numbing","freeing","delightful","fragile","determined","graceful","scenic","deceptive","distant","devastating","lonely","unpredictable","hopeful","uplifting","daunting","twisting","indifferent","shifting","familiar","narrow","gracious","indulgent","cloudy","radiant","uncertain","relentless","pensive","disruptive","grateful","encouraging","fragile","reflective","unrelenting","forgiving","open-ended","reflective","rejuvenating"];
+
+        const journeyoveralllist = [
+            "You wander through [location] with [random ally] and find yourself [action]— as a feeling of [emotion] quietly taking root within you. The journey is [journey], each step adding to the growing tapestry of your adventures as a mage.",
+            "As you step into [location] with [random ally], you start the journey by [action], as the weight of [emotion] settles gently in your chest. The journey is [journey], marking this moment as another thread in your rich and ever-expanding story as a mage.",
+            "Traversing the paths of [location] with [random ally], you pause and start [action], as the wave of [emotion] sweeps through your mind. The journey is [journey], each new experience molding your future as a mage.",
+            "Moving through the expanse of [location] with [random ally], you are drawn to [action], and a quiet yet profound sense of [emotion] wraps around your heart. The journey is [journey], leaving you with yet another intricate piece of your story as a mage.",
+            "Lost within the charm of [location] with [random ally], you find yourself [action]— the subtle hum of [emotion] filling your senses. The journey is [journey], weaving another captivating moment into the fabric of your mage life.",
+            "While navigating the corners of [location] with [random ally], you surrender to the act of [action], as the tender embrace of [emotion] fills your spirit. The journey is [journey], each step forward deepening your connection with the world around you as a mage.",
+            "As you drift through [location] with [random ally], the rhythm of your surroundings naturally leads you to [action], and a flood of [emotion] fills your mind. The journey is [journey], unfolding in a way a mage such as you could understand.",
+            "Within the sacred bounds of [location] with [random ally], you pause and start [action]—  the quiet stirring of [emotion] gently seeps into your soul. The journey is [journey], enriching your life with yet another layer of wisdom and experience as a mage.",
+            "Strolling through the forgotten pathways of [location] with [random ally], you cannot help but start [action]— the delicate thread of [emotion] beginning to weave through your thoughts. The journey is [journey], transforming each moment into a reflection of your growth as a mage.",
+            "In the heart of [location] with [random ally], you find yourself naturally [action], and with it, the soft rush of [emotion] envelops you like an old friend. The journey is [journey], each step leading you further into the depths of your journey as a mage."
+        ];
+
+        // ================= CONSTANTS FOR AN UNLOADED COMPANION TEMPLATE! =================
+        const savedCompanion = localStorage.getItem('companionTemplate');
+        const defaultCompanionTemplate =
+            {
+            name: "SILVEAS VESPERTINE",
+            title: "(GRUMPY) ROYAL KNIGHT OF THE SUN PALACE",
+            affinityLevels: [
+                {name: "Stranger", points: 0, lines: ["Move aside. I don’t have time to babysit amateurs.","I suggest you observe first before you embarrass yourself.","You’re not bad. Just... irrelevant so far.","I don’t remember asking for commentary.","If you want to impress me, do better. If not, disappear.","Do not mistake my patience for interest.","Hmph. Confidence without competence is dangerous.","You speak like you expect me to care.","Prove you’re worth speaking to, then we’ll talk.","I don’t trust people I can’t read. And right now, you’re noise."]},
+                {name: "Acquaintance", points: 50, lines: ["You’re persistent. I’ll give you that.","Still green, but you’re improving. Slightly.","You’re not useless. Just unrefined.","Don’t waste my time if you don’t intend to follow through.","You’ve got potential. Whether that means anything is up to you.","Why are you standing like that? Fix your posture.","I remember your name. That’s progress.","Don’t think we’re friends. I’m just watching because you’re interesting.","I’m not impressed… yet. But I’m watching.","Tread carefully. I don’t offer second chances easily."]},
+                {name: "Friend", points: 100, lines: ["Alright, I’ll help you. But don’t make this a habit.","You’re tolerable company. That’s saying something.","You’ve got guts. I like that.","Don’t let them push you around. That’s my job.","I’m not easy on you just because we’re close.","You know I only insult those I see promise in, right?","You fall? Get back up. I’ll be watching.","I’m not here to coddle. I’m here to make you sharper.","You keep surprising me. Don’t stop.","You’re now part of my circle. I expect better from you."]},
+                {name: "Partner", points: 150, lines: ["You’re mine. And I don’t say that lightly.","If someone looks at you wrong, they’ll have to deal with me.","You’re the only chaos I allow next to me.","You want to sulk or talk? Either way, I’m not leaving.","You’re stubborn. I like that. Reminds me of me.","Even on your worst days, you’re still the best choice I ever made.","I’ll push you hard because I know what you’re capable of.","Come here. Let me hold you. You’ve done enough.","You need rest. And no, I’m not asking.","I may bark orders, but you’re the only one I’d ever kneel for."]},
+                {name: "Confidant", points: 200, lines: ["You’re the only one who sees me without the armor.","I trust you. Don’t make me regret doing that.","You’ve seen the worst in me and still stayed. That scares me.","I’d burn down the world for you. Say the word.","Your silence speaks louder than most people’s screams.","You understand me. That’s rare. And dangerous.","You ground me. Even when I’m furious.","When I’m with you, I’m not a knight. I’m just...Silveas.","I don’t have to be strong around you. That means everything.","You know me too well now, Don’t stop."]},
+                {name: "Lover", points: 250, lines: ["You’re not just someone I care for. You’re a part of me.","I watch your back. Always. Even when you don’t ask.","You say you’re not strong? You’ve held me together more than I admit.","Every plan I make includes you. Always.","No, I don’t need help. I need *you*.","You don’t need to impress me. You already won me.","Even when I’m furious, I’ll never raise at you.","I’d trade power for peace if it meant keeping you safe.","You still don’t get it, do you? You’re my home.","I won’t promise perfection. But swear I’m yours."]},
+                {name: "Love of Your Life", points: 300, lines: ["You are the only person who could break me. And I would still say thank you.","Even if the world forgets me, I’ll live forever in you.","I’ve never wanted forever... until you.","When I hold you, I forget how heavy the world is.","You aren’t just my love. You’re my reason, my anchor.","I’ve met power, stood alone—but loving you? It's the only thing that matters now.","I see galaxies in your eyes. And I don’t need to conquer them.","If I die tomorrow, know this: I lived in your arms.","Touch me. Stay close. As long as you breathe, I’m not lost.","You are the victory I never thought I deserved."]}
+                ]
+            };
+                
+        let companionTemplate = savedCompanion
+            ? JSON.parse(savedCompanion)
+            : defaultCompanionTemplate;
+
+        // ================= CONSTANTS FOR AN UNLOADED GAMESTATE! =================
+        let gameState = JSON.parse(localStorage.getItem('gameState')) || {
+            stats: { str: 2, int: 0, soc: 0, spr: 0 },
+            allies: [{ species: "Mirrorfox", personality: "Reserved", status: "", name: "" }],
+            lastLocation: "",
+            coins: 0,
+            candies: 0,
+            companionAffinity: 0,
+            companionLevel: 0
+        };
+
+        let lastActivity = Date.now();
+        let renamingIndex = -1;
+
+        function updateAllies() {
+            const allyList = document.getElementById('ally-list');
+            allyList.innerHTML = '';
+            
+            gameState.allies.forEach((ally, index) => {
+                const allyItem = document.createElement('div');
+                allyItem.className = 'ally-item';
+                allyItem.innerHTML = `
+                    <div>
+                        🐾 ${ally.name || ally.species} | Species: ${ally.species}<br>
+                        <small>Nature: ${ally.personality} | ${ally.status || "Idle"}</small>
+                    </div>
+                    <div class="ally-buttons">
+                        <button class="cyber-button" onclick="interactWithAlly(${index})">INTERACT</button>
+                        <button class="cyber-button" onclick="showRename(${index})">NAME</button>
+                    </div>
+                `;
+                allyList.appendChild(allyItem);
+            });
+        }
+
+        function interactWithAlly(index) {
+            const ally = gameState.allies[index];
+            const reaction = creatureactionlist[Math.floor(Math.random() * creatureactionlist.length)];
+            
+            document.getElementById('interaction-title').textContent = `${ally.name || ally.species}'s Interaction`;
+            document.getElementById('interaction-content').textContent = `${ally.name || ally.species} is ${reaction}!`;
+            document.getElementById('interaction-overlay').style.display = 'flex';
+        }
+
+        function showRename(index) {
+            renamingIndex = index;
+            const ally = gameState.allies[index];
+            document.getElementById('ally-new-name').value = ally.name || '';
+            document.getElementById('rename-overlay').style.display = 'flex';
+        }
+
+        function confirmRename() {
+            if (renamingIndex > -1) {
+                const newName = document.getElementById('ally-new-name').value.trim();
+                gameState.allies[renamingIndex].name = newName;
+                updateAllies();
+                localStorage.setItem('gameState', JSON.stringify(gameState));
+                document.getElementById('rename-overlay').style.display = 'none';
+            }
+        }
+
+        function updateCompanionUI() {
+            document.getElementById('coins').textContent = gameState.coins;
+            document.getElementById('candies').textContent = gameState.candies;
+            document.getElementById('companion-name').textContent = companionTemplate.name;
+            document.getElementById('companion-title').textContent = companionTemplate.title;
+
+            let newLevel = 0;
+            const maxLevelIndex = companionTemplate.affinityLevels.length - 1;
+            
+            for (let i = maxLevelIndex; i >= 0; i--) {
+                if (gameState.companionAffinity >= companionTemplate.affinityLevels[i].points) {
+                    newLevel = i;
+                    break;
+                }
+            }
+            gameState.companionLevel = newLevel;
+            
+            const currentLevel = companionTemplate.affinityLevels[gameState.companionLevel];
+            const isMaxLevel = gameState.companionLevel === maxLevelIndex;
+
+            let progress = 0;
+            let pointsText = "";
+            
+            if (isMaxLevel) {
+                pointsText = `${gameState.companionAffinity}/∞`;
+                progress = 100;
+            } else {
+                const nextLevel = companionTemplate.affinityLevels[gameState.companionLevel + 1];
+                const levelPoints = nextLevel.points - currentLevel.points;
+                const progressPoints = gameState.companionAffinity - currentLevel.points;
+                
+                progress = (progressPoints / levelPoints) * 100;
+                pointsText = `${gameState.companionAffinity}/${nextLevel.points}`;
+                
+                progress = Math.min(progress, 100);
+            }
+            
+            document.getElementById('companion-affinity').textContent =
+                `Affinity: ${currentLevel.name} (${pointsText})`;
+            document.querySelector('.affinity-progress').style.width = `${progress}%`;
+            document.getElementById('companion-portrait').src = 'CompanionPortrait.png';
+        }
+
+        // ================= TOO MUCH COINS TO GRIND? FEEL FREE TO ALTER THE PRICE! =================
+        function buyCandy() {
+            if(gameState.coins >= 500) {
+                gameState.coins -= 500;
+                gameState.candies++;
+                localStorage.setItem('gameState', JSON.stringify(gameState));
+                updateCompanionUI();
+            } else {
+                alert("Not enough coins! AFK and earn some!");
+            }
+        }
+
+        function increaseAffinity() {
+            if(gameState.candies > 0) {
+                gameState.candies--;
+                gameState.companionAffinity++;
+                localStorage.setItem('gameState', JSON.stringify(gameState));
+                updateCompanionUI();
+            } else {
+                alert("No candies are available!");
+            }
+        }
+
+        function interactWithCompanion() {
+            const level = companionTemplate.affinityLevels[gameState.companionLevel];
+            const line = level.lines[Math.floor(Math.random() * level.lines.length)];
+            
+            const messageElement = document.getElementById('companion-message');
+            messageElement.textContent = `"${line}"`;
+            messageElement.classList.add('show-message');
+            
+            setTimeout(() => {
+                messageElement.classList.remove('show-message');
+            }, 3000);
+        }
+
+        function saveCompanion() {
+            const data = JSON.stringify(companionTemplate, null, 2);
+            const blob = new Blob([data], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'companion_template.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadCompanion() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.txt';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const loadedData = JSON.parse(reader.result);
+                        companionTemplate = loadedData;
+                    
+                        localStorage.setItem('companionTemplate', JSON.stringify(companionTemplate));
+                    
+                        updateCompanionUI();
+                        alert(`Loaded companion: ${companionTemplate.name}`);
+                    } catch (error) {
+                        alert("Invalid companion file format!");
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+
+        function generateJourneyUpdate() {
+            const coinsEarned = Math.floor(Math.random() * 51) + 50;
+            gameState.coins += coinsEarned;
+            
+            // ================= WANT MORE CHANCES OF BONUS STAT INCREASE? CHANGE THE PROBABILITY! 0.9 = 1%, so 0.1 = 90%! :3 =================
+            let statIncrease = null;
+            if(Math.random() > 0.9) {
+                const stats = Object.keys(gameState.stats);
+                const randomStat = stats[Math.floor(Math.random() * stats.length)];
+                gameState.stats[randomStat]++;
+                statIncrease = randomStat.toUpperCase();
+            }
+            const template = journeyoveralllist[Math.floor(Math.random() * journeyoveralllist.length)];
+            const place = placeslist[Math.floor(Math.random() * placeslist.length)];
+            const action = actionlist[Math.floor(Math.random() * actionlist.length)];
+            const emotion = feelinglist[Math.floor(Math.random() * feelinglist.length)];
+            const journey = journeylist[Math.floor(Math.random() * journeylist.length)];
+            const ally = gameState.allies.length > 0
+                ? gameState.allies[Math.floor(Math.random() * gameState.allies.length)] : null;
+
+            gameState.allies.forEach(ally => {
+                ally.status = `${creatureactionlist[Math.floor(Math.random() * creatureactionlist.length)]} at ${place}.`;
+            });
+
+            const entry = template
+                .replace(/\[location\]/g, place)
+                .replace(/\[random ally\]/g, ally ? (ally.name || ally.species) : "Your Loyal Companion")
+                .replace(/\[action\]/g, action)
+                .replace(/\[emotion\]/g, emotion)
+                .replace(/\[journey\]/g, journey);
+
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `
+                <div style="color: var(--accent);">
+                    ${new Date().toLocaleTimeString()}:
+                </div>
+                <div style="margin: 5px 0 15px 20px;">
+                    ${entry} ${statIncrease ? `<span style="color:var(--accent);">(+1 ${statIncrease})</span>` : ''}
+                    <div style="color:#666; margin-top:5px;">+${coinsEarned}🪙</div>
+                </div>
+            `;
+            document.getElementById('journey-log').prepend(logEntry);
+            
+            localStorage.setItem('gameState', JSON.stringify(gameState));
+            updateAllies();
+            updateCompanionUI();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!gameState.allies) gameState.allies = [];
+            gameState.allies = gameState.allies.map(ally => ({
+                species: ally.species,
+                personality: ally.personality,
+                status: ally.status || "",
+                name: ally.name || ""
+            }));
+            updateAllies();
+            updateCompanionUI();
+        });
+
+        setInterval(() => {
+            if (Date.now() - lastActivity > 300000) {
+                generateJourneyUpdate();
+                lastActivity = Date.now();
+            }
+        }, 1000);
+
+        document.addEventListener('mousemove', () => lastActivity = Date.now());
+        document.addEventListener('keydown', () => lastActivity = Date.now());
+
+        function navigateTo(url) {
+            document.body.style.animation = 'fadeOut 0.5s ease-out';
+            setTimeout(() => {
+                window.location.href = url;
+            }, 450);
+        }
+
+        document.body.classList.add('page-transition');
+    </script>
+</body>
+</html>
